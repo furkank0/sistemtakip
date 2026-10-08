@@ -6,7 +6,7 @@
 - **Tarih:** 2026-10-08
 - **Repo:** https://github.com/furkank0/sistemtakip
 - **Aktif dal:** `ai/codex/m0-scaffold`
-- **Son commit:** Yok
+- **Son commit:** `8bac3f7` (`chore: add M0 project scaffold`)
 
 ## Özet
 Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerlendirildi: Python 3.12, FastAPI, SQLAlchemy, Alembic, PostgreSQL 16, APScheduler ve HTMX. M0 temel iskeleti `ai/codex/m0-scaffold` dalında hazırlandı.
@@ -22,7 +22,7 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 
 ## Devam Edenler / Yarım Kalanlar
 - M0 henüz tamamlanmadı: Docker servisleri başlatılmadı/doğrulanmadı, otomatik test yok, CI'da pytest adımı ve frontend lint/build adımları yok (frontend statik Nginx imajı olarak derleniyor).
-- M0 değişiklikleri `ai/codex/m0-scaffold` dalında staged durumda; commit/push tamamlanmadı.
+- M0 değişiklikleri `ai/codex/m0-scaffold` dalında commit edildi; remote'a push bekliyor.
 
 ## Sıradaki Adımlar
 1. Docker Compose kurulu ve erişilebilir olduğunda servisleri ayağa kaldırıp `/health`, `/version` ve `/api/docs` yollarını doğrula.
@@ -61,6 +61,6 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 
 ### 2026-10-08 — Codex
 - Yapılanlar: Arşiv belgeleri incelendi; kullanıcı adına HTMX yığını seçildi; temel M0 uygulama iskeleti eklendi; kaynak `origin/main` alındı ve ajan dalı oluşturuldu.
-- Yarım kalanlar: Compose/HTTP doğrulaması, test ve frontend CI kapsamı; commit/push.
-- Commit/dal: Commit yok; `ai/codex/m0-scaffold` (`origin/main` tabanlı).
+- Yarım kalanlar: Compose/HTTP doğrulaması, test ve frontend CI kapsamı; dalın remote'a gönderilmesi.
+- Commit/dal: `8bac3f7` — `ai/codex/m0-scaffold` (`origin/main` tabanlı).
 - Sonraki ajana not: Stack seçimi HTMX olarak kaydedildi. M0 henüz DoD'yi karşılamıyor.
