@@ -1,12 +1,11 @@
 """Initial empty schema revision."""
 
 from collections.abc import Sequence
-from typing import Optional
 
 revision: str = "0001_initial"
-down_revision: Optional[str] = None
-branch_labels: Optional[Sequence[str]] = None
-depends_on: Optional[Sequence[str]] = None
+down_revision: str | None = None
+branch_labels: Sequence[str] | None = None
+depends_on: Sequence[str] | None = None
 
 
 def upgrade() -> None:
