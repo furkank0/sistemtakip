@@ -2,12 +2,11 @@
 
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
-- **Son güncelleyen:** Codex — M0 CI/remote durumu
+- **Son güncelleyen:** Codex — M0 Compose CI sonucu
 - **Tarih:** 2026-10-08
 - **Repo:** https://github.com/furkank0/sistemtakip
 - **Aktif dal:** `ai/codex/m0-scaffold`
-- **Son remote commit:** `f471157` (`fix: resolve backend lint failures`)
-- **Yerel commit:** Compose CI kontrolü eklendi, push bekliyor
+- **Son commit:** `f284342` (`ci: validate Docker Compose configuration`)
 
 ## Özet
 Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerlendirildi: Python 3.12, FastAPI, SQLAlchemy, Alembic, PostgreSQL 16, APScheduler ve HTMX. M0 temel iskeleti `ai/codex/m0-scaffold` dalında GitHub'a push edildi.
@@ -24,14 +23,14 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 ## Devam Edenler / Yarım Kalanlar
 - M0 henüz tamamlanmadı: yerel ortamda Docker komutu yok, bu nedenle Compose/HTTP doğrulaması yapılamıyor.
 - İlk GitHub Actions çalıştırmasında frontend imajı derlemesi başarılı, backend Ruff adımı başarısız oldu. Düzeltme sonrası ikinci çalıştırmada backend kalite ve frontend imajı adımları başarılı oldu.
-- Compose dosyasına CI yapılandırma doğrulaması eklendi; bu commit ağ bağlantısı nedeniyle push edilemedi.
+- Compose dosyası için CI yapılandırma doğrulaması eklendi ve geçti.
 - CI'da pytest adımı bulunmuyor; frontend için imaj derleme adımı var, ayrı lint adımı yok. Test ekleme/çalıştırma bu oturumda yapılmadı.
 - M0 iskeleti `ai/codex/m0-scaffold` dalında `origin`'e push edildi.
 
 ## Sıradaki Adımlar
-1. Yerel Compose yapılandırma kontrolü commit'ini push et ve GitHub Actions sonucunu gözle.
-2. Docker erişimi sağlandığında servisleri ayağa kaldırıp `/health`, `/version` ve `/api/docs` yollarını doğrula.
-3. CI'daki pytest ve frontend lint eksiklerini tamamlayıp M0 DoD'yi karşıla; ardından değişiklikleri PR akışına taşı.
+1. Docker erişimi sağlandığında Compose servislerini ayağa kaldırıp `/health`, `/version` ve `/api/docs` yollarını doğrula.
+2. M0 CI'a pytest/testler ve frontend lint adımlarını ekle; ardından CI kapsamını tamamla.
+3. M0 DoD karşılandıktan sonra `ai/codex/m0-scaffold` değişikliklerini PR akışına taşı.
 
 ## Açık Kararlar (Kullanıcıdan Bekleniyor)
 - [x] Teknoloji yığını: Python 3.12 + FastAPI + SQLAlchemy/Alembic + PostgreSQL 16 + APScheduler + HTMX
@@ -52,8 +51,8 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 ## Bilinen Sorunlar
 - GitHub erişimi ve kimlik doğrulaması çalışıyor; `ai/codex/m0-scaffold` remote dalı yayınlandı.
 - Bu çalışma ortamında Docker komutu bulunmuyor; M0 Docker/HTTP doğrulaması yapılamadı.
-- Son GitHub Actions çalıştırması (`37838950075`) başarılı: backend-quality ve frontend-build geçti. Bu çalıştırma Compose yapılandırma kontrolü eklenmeden önceki revizyonda yapıldı.
-- Son push denemeleri `github.com:443` bağlantı hatasıyla başarısız; yerel dal remote'dan 1 commit ileride.
+- Son GitHub Actions çalıştırması (`37839336795`) başarılı: `compose-config`, `backend-quality` ve `frontend-build` geçti.
+- `ai/codex/m0-scaffold` remote ile eşit; çalışma ağacı temiz.
 - Test/pytest adımı ve ayrı frontend lint adımı CI'da henüz yok.
 - GitHub repo görünürlüğü ve erişim durumu bu çalışma alanından doğrulanmadı.
 
@@ -78,7 +77,7 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 - Sonraki ajana not: Stack seçimi HTMX olarak kaydedildi. M0 henüz DoD'yi karşılamıyor.
 
 ### 2026-10-08 — Codex (devam)
-- Yapılanlar: GitHub Actions'ta ilk Ruff hataları düzeltildi; Ruff lint/format ve mypy yerel bundled Python ile, backend-quality ve frontend-build GitHub Actions'ta geçti; Compose config CI kontrolü eklendi.
-- Yarım kalanlar: Son yerel commit'i push etmek; yeni Compose CI sonucu; Docker/HTTP doğrulaması (Docker komutu yok); pytest/frontend lint CI adımları.
-- Commit/dal: Remote `f471157`; bir sonraki yerel commit `ai/codex/m0-scaffold` dalında push bekliyor.
+- Yapılanlar: İlk Ruff hataları düzeltildi; Ruff lint/format ve mypy yerel bundled Python ile geçti; Actions çalıştırması `37839336795` içinde Compose config, backend-quality ve frontend-build başarılı oldu.
+- Yarım kalanlar: Docker/HTTP doğrulaması (Docker komutu yok); pytest/testler ve frontend lint CI adımları.
+- Commit/dal: `f284342` — `ai/codex/m0-scaffold`; remote ile eşit.
 - Sonraki ajana not: Bu turda test eklenmedi veya çalıştırılmadı; M0 tamamlanmış sayılmıyor.
