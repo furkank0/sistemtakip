@@ -5,6 +5,13 @@ on:
   pull_request:
 
 jobs:
+  compose-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose --env-file .env.example -f deploy/docker-compose.yml config --quiet
+
   backend-quality:
     runs-on: ubuntu-latest
     defaults:
