@@ -54,3 +54,20 @@ class AssetRead(AssetBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+
+class AssetList(BaseModel):
+    items: list[AssetRead]
+    total: int
+    offset: int
+    limit: int
+
+
+class DashboardSummary(BaseModel):
+    total: int
+    active: int
+    expired: int
+    expiring_30_days: int
+    expiring_60_days: int
+    expiring_90_days: int
+    by_type: dict[str, int]

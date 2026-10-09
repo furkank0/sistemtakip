@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from datetime import date
+from datetime import date, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -69,7 +69,8 @@ def test_asset_crud_and_filters(client: TestClient) -> None:
 
     listed = client.get("/api/assets", params={"type": "domain"})
     assert listed.status_code == 200
-    assert [item["id"] for item in listed.json()] == [asset["id"]]
+    assert listed.json()["total"] == 1
+    assert [item["id"] for item in listed.json()["items"]] == [asset["id"]]
 
     updated = client.patch(f"/api/assets/{asset['id']}", json={"status": "expired"})
     assert updated.status_code == 200
@@ -96,3 +97,31 @@ def test_asset_rejects_invalid_date_range(client: TestClient) -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_dashboard_counts_assets_by_status_and_expiry(client: TestClient) -> None:
+    today = date.today()
+    for name, asset_type, asset_status, expires_at in (
+        ("Active soon", "domain", "active", today + timedelta(days=10)),
+        ("Active later", "hosting", "active", today + timedelta(days=70)),
+        ("Expired", "license", "expired", today - timedelta(days=1)),
+    ):
+        response = client.post(
+            "/api/assets",
+            json={
+                "type": asset_type,
+                "name": name,
+                "status": asset_status,
+                "expires_at": expires_at.isoformat(),
+            },
+        )
+        assert response.status_code == 201
+
+    dashboard = client.get("/api/assets/dashboard")
+    assert dashboard.status_code == 200
+    assert dashboard.json()["total"] == 3
+    assert dashboard.json()["active"] == 2
+    assert dashboard.json()["expired"] == 1
+    assert dashboard.json()["expiring_30_days"] == 1
+    assert dashboard.json()["expiring_60_days"] == 1
+    assert dashboard.json()["by_type"] == {"domain": 1, "hosting": 1, "license": 1}

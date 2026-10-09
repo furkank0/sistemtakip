@@ -5,10 +5,10 @@
 ## 2026-10-09 — Codex
 
 - **Dal:** `ai/codex/m0-complete`
-- **Yapılanlar:** Proje güncellendi; Docker erişiminin olmadığı doğrulandı; Python 3.14 sanal ortamında geliştirme bağımlılıkları kuruldu; backend yerel olarak `http://127.0.0.1:8000` adresinde başlatıldı; `/health`, `/version`, `/` ve `/api/docs` endpoint'leri HTTP 200 ile doğrulandı. FastAPI endpoint testleri eklendi ve CI'a pytest adımı eklendi. M1'in ilk dilimi olarak `assets` SQLAlchemy modeli, `0002_assets` migration'ı, create/list/detail/update/delete API'ları ve tip/durum filtreleri eklendi.
-- **Testler:** `pytest` 5 test geçti; Ruff lint/format ve mypy geçti; OpenAPI içinde `/api/assets` rotaları ve çalışan HTTP sunucusunda `/health`/`/api/docs` doğrulandı.
+- **Yapılanlar:** Proje güncellendi; Docker erişiminin olmadığı doğrulandı; Python 3.14 sanal ortamında geliştirme bağımlılıkları kuruldu; backend yerel olarak `http://127.0.0.1:8000` adresinde başlatıldı; `/health`, `/version`, `/` ve `/api/docs` endpoint'leri HTTP 200 ile doğrulandı. FastAPI endpoint testleri eklendi ve CI'a pytest adımı eklendi. M1'in ilk dilimi olarak `assets` SQLAlchemy modeli, `0002_assets` migration'ı, create/list/detail/update/delete API'ları, tip/durum filtreleri, sayfalama ve `/api/assets/dashboard` özet endpoint'i eklendi.
+- **Testler:** `pytest` 6 test geçti; Ruff lint/format ve mypy geçti; OpenAPI içinde `/api/assets` ve `/api/assets/dashboard` rotaları, çalışan HTTP sunucusunda `/health` doğrulandı.
 - **Yarım kalanlar:** Docker Desktop/Engine bu makinede kurulu olmadığı için PostgreSQL + frontend + Caddy Compose stack'i başlatılamadı; migration gerçek PostgreSQL üzerinde çalıştırılamadı. Python proje aralığı `>=3.12,<3.13`, makinedeki yerel yorumlayıcı 3.14.2; tam uyum için Python 3.12 kurulmalı.
-- **Sıradaki adımlar:** Docker ve Python 3.12 kurulumundan sonra migration'ı PostgreSQL üzerinde çalıştırıp Compose stack'ini proxy üzerinden doğrulamak; M1 pano ve varlık endpoint sayfalamasına başlamak; sağlayıcı/tag ilişkilerini eklemek.
+- **Sıradaki adımlar:** Docker ve Python 3.12 kurulumundan sonra migration'ı PostgreSQL üzerinde çalıştırıp Compose stack'ini proxy üzerinden doğrulamak; M1 frontend pano/CRUD ekranlarını eklemek; sağlayıcı/tag ilişkilerini ve CSV dışa aktarımını eklemek.
 
 - **Son güncelleyen:** Codex — M0 Compose CI sonucu
 - **Tarih:** 2026-10-08
