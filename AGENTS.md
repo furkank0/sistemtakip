@@ -85,6 +85,24 @@ Kredi, token veya bağlam sınırı yaklaştığında (ya da kullanıcı "devir 
 
 Not: Ajanlar kendi kalan kredisini her zaman göremez. Bu yüzden `docs/STATE.md` her anlamlı adımdan sonra güncel tutulur; kesinti anında devir hazır olmalıdır.
 
+## 6.1 Ortak AI Oturum Günlüğü (ZORUNLU)
+
+Her AI ajanı, geliştirme oturumu sonunda `docs/AI_SESSION_LOG.md` dosyasının en üstüne tarih-saatli bir kayıt eklemek zorundadır. Kayıt Türkiye saatiyle (`Europe/Istanbul`) tutulur ve şu bilgileri içerir:
+
+- AI adı, tarih/saat, dal ve son commit
+- Bu oturumda yapılan somut işler
+- Değişen dosyalar
+- Çalıştırılan testler ve doğrulama sonucu
+- Yarım kalan işler ve bilinen sorunlar
+- Sonraki geliştirme planı
+- Kullanıcıdan beklenen onay veya bilgi
+
+Yeni ajana oturum sonunda şu komut gönderilebilir:
+
+```text
+Oturumu kapatmadan önce AGENTS.md, docs/STATE.md ve docs/AI_SESSION_LOG.md kurallarına uy. Bu oturumda yaptığın işleri, değişen dosyaları, test sonuçlarını, yarım kalanları ve sonraki planı Türkiye saatiyle tarih-saat ekleyerek docs/AI_SESSION_LOG.md dosyasının en üstüne yaz. Değişiklikleri commit edip mevcut AI dalına push et. Son commit hash'ini ve devir özetini bildir.
+```
+
 ## 7. Yol Haritası
 
 > Ayrıntılı görevler, bitti tanımları ve mimari için `docs/PLAN.md` dosyasına bak.

@@ -71,3 +71,5 @@ git diff --check
 4. Sonraki aşamalarda checklist, gerçek otomatik kontroller ve LDAP/AD kimlik doğrulamaya geç.
 
 Değişiklik yaparken [AGENTS.md](../AGENTS.md) içindeki güvenlik, migration, test, branch ve devir kurallarına uy.
+
+Oturumlar arası ortak kayıt için [AI_SESSION_LOG.md](./AI_SESSION_LOG.md) dosyasını kullan. Her oturum sonunda yeni kaydı dosyanın en üstüne ekle.
