@@ -2,6 +2,14 @@
 
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
+## 2026-10-09 — Codex
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Proje güncellendi; Docker erişiminin olmadığı doğrulandı; Python 3.14 sanal ortamında geliştirme bağımlılıkları kuruldu; backend yerel olarak `http://127.0.0.1:8000` adresinde başlatıldı; `/health`, `/version`, `/` ve `/api/docs` endpoint'leri HTTP 200 ile doğrulandı. FastAPI endpoint testleri eklendi ve CI'a pytest adımı eklendi.
+- **Testler:** `pytest` 3 test geçti; Ruff lint/format ve mypy geçti.
+- **Yarım kalanlar:** Docker Desktop/Engine bu makinede kurulu olmadığı için PostgreSQL + frontend + Caddy Compose stack'i başlatılamadı. Python proje aralığı `>=3.12,<3.13`, makinedeki yerel yorumlayıcı 3.14.2; tam uyum için Python 3.12 kurulmalı.
+- **Sıradaki adımlar:** Docker ve Python 3.12 kurulumundan sonra Compose stack'ini başlatıp endpoint'leri proxy üzerinden tekrar doğrulamak; CI'ı çalıştırmak; M1 varlık modelleri ve migration'ına başlamak.
+
 - **Son güncelleyen:** Codex — M0 Compose CI sonucu
 - **Tarih:** 2026-10-08
 - **Repo:** https://github.com/furkank0/sistemtakip

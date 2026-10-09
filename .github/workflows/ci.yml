@@ -28,6 +28,7 @@ jobs:
       - run: ruff check app alembic
       - run: ruff format --check app alembic
       - run: mypy app
+      - run: pytest
 
   frontend-build:
     runs-on: ubuntu-latest
