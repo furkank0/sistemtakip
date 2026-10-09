@@ -6,6 +6,7 @@
 
 - **Dal:** `ai/codex/m0-complete`
 - **Yapılanlar:** `tags` ve `asset_tags` tabloları ile geri alınabilir `0003_tags` migration'ı eklendi. Etiket oluşturma/listeleme/silme API'ları, varlık oluşturma/güncellemede `tag_ids`, varlık listesi ve CSV dışa aktarımında `tag_id` filtresi eklendi. Arayüzde etiket filtresi, çoklu etiket seçimi ve tabloda etiket gösterimi eklendi. Mevcut serbest metin sağlayıcı alanı geriye dönük uyumluluk için korundu.
+- **Örnek veriler:** Demo ortamına 4 örnek varlık eklendi: domain, hosting, VDS ve lisans. İki demo etiketi kullanılıyor (`Demo - Kritik`, `Demo - Yenileme`); kayıtlar gerçek sistem verisi değildir.
 - **Testler:** Backend testleri 8/8 geçti; Ruff, frontend `node --check` ve diff kontrolü başarılı.
 - **Doğrulama:** Compose imajları yeniden oluşturuldu; PostgreSQL üzerinde `0003_tags` migration'ı başarıyla uygulandı. Proxy üzerinden tag oluşturma, varlık etiketleme, `tag_id` filtreleme, CSV dışa aktarım ve temizleme smoke testi geçti.
 - **Yarım kalanlar:** Sağlayıcıların normalize edilmesi, maliyet özeti ve temel audit log dilimleri kaldı.
