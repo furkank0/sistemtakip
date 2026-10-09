@@ -1,5 +1,16 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 — Codex — Devir hazırlığı
+
+- **Git durumu:** `ai/codex/m0-complete` dalı GitHub'daki `origin/ai/codex/m0-complete` ile eşit ve çalışma ağacı temizdir. Son commit: `cd3264e feat: add vendor management Agent: other`.
+- **Tamamlanan kapsam:** M0 iskeleti ve Docker Compose; PostgreSQL/Alembic; FastAPI asset CRUD; dashboard; etiketler; CSV dışa aktarım; sol menü panelleri; demo veriler; sağlayıcı modeli, ilişkisi, API'ları ve arayüz yönetimi.
+- **Çalışan ortam:** Compose tanımı [deploy/docker-compose.yml](../deploy/docker-compose.yml) içindedir. Servisler PostgreSQL, backend, frontend ve Caddy proxy'dir. Uygulama proxy üzerinden `http://127.0.0.1:8080/` adresinde çalışır; API belgeleri `/api/docs` yolundadır. Docker yolu yeni PowerShell oturumlarında gerekirse `C:\Program Files\Docker\Docker\resources\bin` olarak PATH'e eklenmelidir.
+- **Demo durumu:** PostgreSQL'de 4 demo varlık, 2 demo etiket ve 4 demo sağlayıcı bulunmaktadır. Demo kayıtları gerçek sistem verisi değildir.
+- **Doğrulananlar:** Backend `pytest` 9/9, Ruff, frontend `node --check`, `git diff --check`; Chrome'da dashboard, varlıklar ve ayarlar ekranları doğrulandı. Python testleri `backend` klasöründen çalıştırılmalıdır: `..\.venv\Scripts\python.exe -m pytest tests -q`.
+- **Yarım kalanlar:** Eski serbest metin sağlayıcıların otomatik normalize edilmesi, aylık/yıllık maliyet ayrıştırması, audit log, gerçek otomatik kontroller ve kimlik doğrulama.
+- **Sıradaki somut adımlar:** 1) dashboard maliyetini aylık/yıllık özetle, 2) değişiklikleri audit log'a yaz, 3) M2 yenileme eşikleri ve SMTP bildirim motoruna geç.
+- **Devir notu:** Yeni ajan önce [AGENTS.md](../AGENTS.md) ve bu dosyayı okumalı, `git pull` yapmalı, mevcut dalı ezmemeli ve devam etmeden önce çalışma ağacını kontrol etmelidir.
+
 ## 2026-10-09 — Codex — Sağlayıcı yönetimi
 
 - **Dal:** `ai/codex/m0-complete`
