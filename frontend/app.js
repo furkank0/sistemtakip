@@ -9,6 +9,10 @@ const auditFieldLabels = {
   starts_at: "başlangıç tarihi", expires_at: "bitiş tarihi", auto_renew: "otomatik yenileme",
   reminder_days: "hatırlatma günleri", snoozed_until: "erteleme bitişi",
   support_email: "destek e-postası", panel_url: "panel adresi",
+  nameservers: "nameserver", hosting_plan: "paket", management_url: "yönetim URL'si",
+  ip_address: "IP adresi", operating_system: "işletim sistemi",
+  vcpu_count: "vCPU", memory_gb: "RAM", storage_gb: "disk",
+  product_name: "ürün", seat_count: "koltuk sayısı",
   status: "durum", tag_ids: "etiketler", contact_ids: "irtibat kişileri",
   notes: "not içeriği (değer saklanmaz)",
 };
@@ -110,12 +114,16 @@ function renderAuditLog(entries) {
     const fields = entry.action === "update"
       ? Object.keys(entry.diff)
       : Object.keys(entry.diff.created || entry.diff.deleted || {});
-    const details = fields.map((field) => auditFieldLabels[field] || field).join(", ") || "Kayıt";
+    const labels = fields.map((field) => auditFieldLabels[field] || field);
+    const details = labels.join(", ") || "Kayıt";
+    const compactDetails = labels.length > 3
+      ? `${labels.slice(0, 3).join(", ")} +${labels.length - 3} alan`
+      : details;
     return `<tr>
       <td>${escapeHtml(new Date(entry.at).toLocaleString("tr-TR"))}</td>
       <td>${escapeHtml(auditActionLabels[entry.action] || entry.action)}</td>
       <td>${escapeHtml(auditEntityLabels[entry.entity] || entry.entity)} #${entry.entity_id}</td>
-      <td>${escapeHtml(details)}</td>
+      <td title="${escapeHtml(details)}">${escapeHtml(compactDetails)}</td>
       <td>${escapeHtml(entry.actor)}</td>
     </tr>`;
   }).join("") : '<tr><td class="empty-state" colspan="5">Henüz değişiklik kaydı yok.</td></tr>';
