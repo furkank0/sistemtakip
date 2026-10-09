@@ -2,6 +2,14 @@
 
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
+## 2026-10-09 — Codex — Sol menü panelleri
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Sol menü hash tabanlı çalışan sayfa geçişlerine dönüştürüldü. Genel Bakış ve Varlıklar ayrıştırıldı; Kontroller paneline RDAP/WHOIS, TLS, DNS/HTTP ve TCP/ICMP hazırlık kartları eklendi. Ayarlar paneline API bağlantı durumu, Compose PostgreSQL bilgisi ve Swagger bağlantısı eklendi. Aktif menü, sayfa başlığı ve yeni varlık düğmesi seçili panele göre güncelleniyor.
+- **Doğrulama:** Frontend Docker imajı yeniden oluşturuldu. Chrome üzerinde `#checks` ve `#settings` ekranları açıldı; Ayarlar ekranı API durumunu `Bağlı`, Kontroller ekranı dört planlanan kontrol kartını gösterdi. `node --check` ve `git diff --check` başarılı.
+- **Yarım kalanlar:** Kontroller ekranı şu an hazırlık paneli; uç nokta modeli ve gerçek scheduler M4 aşamasında eklenecek. Sağlayıcı tablosu, maliyet özeti ve temel audit log da M1 içinde kaldı.
+- **Sıradaki adımlar:** Sağlayıcı tablosu ve seçim/filtre akışını eklemek; ardından pano maliyet özetini ve audit log temelini tamamlamak.
+
 ## 2026-10-09 — Codex — Etiket ilişkileri
 
 - **Dal:** `ai/codex/m0-complete`

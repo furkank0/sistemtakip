@@ -13,28 +13,28 @@
       <aside class="sidebar">
         <div class="brand"><span class="brand-mark">S</span><span>sistemtakip</span></div>
         <nav aria-label="Ana menü">
-          <a class="nav-link active" href="#dashboard"><span>▦</span> Genel bakış</a>
-          <a class="nav-link" href="#assets"><span>◈</span> Varlıklar</a>
-          <a class="nav-link" href="#checks"><span>✓</span> Kontroller</a>
-          <a class="nav-link" href="#settings"><span>⚙</span> Ayarlar</a>
+          <a class="nav-link active" data-section="dashboard" href="#dashboard"><span>▦</span> Genel bakış</a>
+          <a class="nav-link" data-section="assets" href="#assets"><span>◈</span> Varlıklar</a>
+          <a class="nav-link" data-section="checks" href="#checks"><span>✓</span> Kontroller</a>
+          <a class="nav-link" data-section="settings" href="#settings"><span>⚙</span> Ayarlar</a>
         </nav>
         <div class="sidebar-footer"><span class="status-dot"></span> Sistem hazır</div>
       </aside>
 
       <main class="main-content">
         <header class="topbar">
-          <div><p class="eyebrow">VARLIK YÖNETİMİ</p><h1>Genel bakış</h1></div>
+          <div><p class="eyebrow" id="page-eyebrow">VARLIK YÖNETİMİ</p><h1 id="page-title">Genel bakış</h1></div>
           <button class="primary-button" id="open-create" type="button">+ Yeni varlık</button>
         </header>
 
-        <section id="dashboard" class="dashboard-grid" aria-label="Özet bilgiler">
+        <section id="dashboard" class="dashboard-grid page-section" data-page-section="dashboard" aria-label="Özet bilgiler">
           <article class="stat-card"><div class="stat-icon blue">◈</div><div><p>Toplam varlık</p><strong id="total-count">—</strong></div></article>
           <article class="stat-card"><div class="stat-icon green">✓</div><div><p>Aktif</p><strong id="active-count">—</strong></div></article>
           <article class="stat-card"><div class="stat-icon amber">!</div><div><p>90 gün içinde biten</p><strong id="expiring-count">—</strong></div></article>
           <article class="stat-card"><div class="stat-icon red">↘</div><div><p>Süresi geçen</p><strong id="expired-count">—</strong></div></article>
         </section>
 
-        <section class="content-card" id="assets">
+        <section class="content-card page-section" data-page-section="assets" id="assets">
           <div class="section-heading"><div><h2>Varlıklar</h2><p>Domain, hosting, VDS ve lisans envanteriniz.</p></div><span class="record-count" id="record-count">0 kayıt</span></div>
           <div class="toolbar">
             <label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Varlık ara..."></label>
@@ -44,6 +44,26 @@
             <button class="ghost-button" id="export-button" type="button">⇩ CSV indir</button><button class="ghost-button" id="refresh-button" type="button">↻ Yenile</button>
           </div>
           <div class="table-wrap"><table><thead><tr><th>Varlık</th><th>Tür</th><th>Sağlayıcı</th><th>Bitiş tarihi</th><th>Durum</th><th>İşlemler</th></tr></thead><tbody id="asset-rows"><tr><td class="empty-state" colspan="6">Varlıklar yükleniyor...</td></tr></tbody></table></div>
+        </section>
+
+        <section class="content-card page-section" data-page-section="checks" id="checks" hidden>
+          <div class="section-heading"><div><h2>Kontroller</h2><p>Sistem uç noktaları ve yenileme kontrolleri için hazırlık alanı.</p></div><span class="record-count">M4 hazırlığı</span></div>
+          <div class="check-grid">
+            <article class="info-card"><div class="info-icon blue">◎</div><div><h3>RDAP / WHOIS</h3><p>Domain bitiş tarihi kontrolü</p></div><span class="status-pill planned">Planlandı</span></article>
+            <article class="info-card"><div class="info-icon green">⌁</div><div><h3>TLS sertifikası</h3><p>Sertifika geçerlilik süresi</p></div><span class="status-pill planned">Planlandı</span></article>
+            <article class="info-card"><div class="info-icon amber">↔</div><div><h3>DNS / HTTP</h3><p>Çözümleme ve erişilebilirlik</p></div><span class="status-pill planned">Planlandı</span></article>
+            <article class="info-card"><div class="info-icon red">◌</div><div><h3>TCP / ICMP</h3><p>Sunucu erişilebilirlik kontrolü</p></div><span class="status-pill planned">Planlandı</span></article>
+          </div>
+          <div class="empty-panel"><strong>Henüz otomatik kontrol tanımlanmadı</strong><span>Bir sonraki aşamada varlık uç noktaları ve kontrol profilleri bu ekrandan yönetilecek.</span></div>
+        </section>
+
+        <section class="content-card page-section" data-page-section="settings" id="settings" hidden>
+          <div class="section-heading"><div><h2>Ayarlar</h2><p>Uygulama bağlantısı ve çalışma ortamı bilgileri.</p></div><span class="record-count">Yerel ortam</span></div>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>API bağlantısı</strong><span>FastAPI servis erişimi</span></div><span class="status-pill online" id="api-status">Kontrol ediliyor...</span></div>
+            <div class="setting-row"><div><strong>Veritabanı</strong><span>Compose PostgreSQL bağlantısı</span></div><span class="status-pill online">Compose</span></div>
+            <div class="setting-row"><div><strong>API belgeleri</strong><span>Endpoint ve şema referansı</span></div><a class="text-link" href="/api/docs" target="_blank" rel="noreferrer">Swagger’ı aç →</a></div>
+          </div>
         </section>
         <p class="error-banner hidden" id="error-banner"></p>
       </main>

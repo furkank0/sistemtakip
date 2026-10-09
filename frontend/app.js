@@ -4,6 +4,12 @@ const statusLabels = { active: "Aktif", expired: "Süresi geçti", cancelled: "�
 const $ = (selector) => document.querySelector(selector);
 let editingAssetId = null;
 let availableTags = [];
+const pageMeta = {
+  dashboard: ["VARLIK YÖNETİMİ", "Genel bakış"],
+  assets: ["ENVANTER", "Varlıklar"],
+  checks: ["SİSTEM İZLEME", "Kontroller"],
+  settings: ["YAPILANDIRMA", "Ayarlar"],
+};
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
@@ -11,6 +17,20 @@ function escapeHtml(value) {
 
 function showError(message) { const banner = $("#error-banner"); banner.textContent = message; banner.classList.remove("hidden"); }
 function clearError() { $("#error-banner").classList.add("hidden"); }
+
+function navigateTo(section) {
+  const selected = pageMeta[section] ? section : "dashboard";
+  document.querySelectorAll("[data-page-section]").forEach((panel) => {
+    panel.hidden = panel.dataset.pageSection !== selected;
+  });
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.toggle("active", link.dataset.section === selected);
+  });
+  $("#page-eyebrow").textContent = pageMeta[selected][0];
+  $("#page-title").textContent = pageMeta[selected][1];
+  $("#open-create").hidden = !["dashboard", "assets"].includes(selected);
+  if (window.location.hash !== `#${selected}`) history.replaceState(null, "", `#${selected}`);
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, { headers: { "Content-Type": "application/json" }, ...options });
@@ -42,6 +62,8 @@ async function loadDashboard() {
     $("#total-count").textContent = summary.total; $("#active-count").textContent = summary.active;
     $("#expiring-count").textContent = summary.expiring_90_days; $("#expired-count").textContent = summary.expired;
     renderAssets(data.items);
+    const health = await request("/health");
+    $("#api-status").textContent = health.status === "ok" ? "Bağlı" : "Kontrol et";
   } catch (error) {
     showError("Varlık verileri yüklenemedi. API ve veritabanı bağlantısını kontrol edin.");
     $("#asset-rows").innerHTML = '<tr><td class="empty-state" colspan="6">Henüz veri alınamadı.</td></tr>';
@@ -96,8 +118,13 @@ function exportAssets() {
 }
 
 $("#open-create").addEventListener("click", openCreate);
+document.querySelectorAll(".nav-link").forEach((link) => link.addEventListener("click", (event) => {
+  event.preventDefault(); navigateTo(link.dataset.section);
+}));
 $("#asset-form").addEventListener("submit", saveAsset); $("#type-filter").addEventListener("change", loadDashboard);
 $("#status-filter").addEventListener("change", loadDashboard); $("#tag-filter").addEventListener("change", loadDashboard); $("#refresh-button").addEventListener("click", loadDashboard); $("#export-button").addEventListener("click", exportAssets);
 $("#asset-rows").addEventListener("click", (event) => { const editButton = event.target.closest("[data-edit]"); const deleteButton = event.target.closest("[data-delete]"); if (editButton) openEdit(editButton.dataset.edit); if (deleteButton) deleteAsset(deleteButton.dataset.delete); });
 $("#search-input").addEventListener("input", () => { const query = $("#search-input").value.trim().toLocaleLowerCase("tr-TR"); document.querySelectorAll("#asset-rows tr").forEach((row) => { row.hidden = query && !row.textContent.toLocaleLowerCase("tr-TR").includes(query); }); });
+window.addEventListener("hashchange", () => navigateTo(window.location.hash.slice(1)));
+navigateTo(window.location.hash.slice(1) || "dashboard");
 loadDashboard();
