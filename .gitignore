@@ -15,3 +15,5 @@ node_modules/
 .idea/
 .vscode/
 *.log
+sistemtakip.db
+backend/sistemtakip.db
