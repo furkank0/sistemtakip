@@ -1,8 +1,8 @@
 # docs/STATE.md — Canlı Proje Durumu
 
-## 2026-10-09 14:54 — Copilot — M1 liste sayfalama ve sıralama
+## 2026-10-09 14:57 — Copilot — M1 commit ve push
 
-- **Git durumu:** `ai/codex/m0-complete`, HEAD `5cfa11b`; contacts ve önceki maliyet/audit/M2 değişiklikleri dahil tüm worktree değişiklikleri yerel; commit/push yapılmadı. `.env` ignore kapsamında.
+- **Git durumu:** `ai/codex/m0-complete`; M1 contacts/liste çalışmaları ve birikmiş maliyet/audit/M2 değişiklikleri `c33466a` commit'iyle `origin/ai/codex/m0-complete` dalına push edildi. Bu durum/log güncellemesi takip eden dokümantasyon commit'ine dahil ediliyor. `.env` ignore kapsamında ve commit dışında.
 - **Yapılanlar:** Asset list API'sine DB seviyesinde sayfalama, kayıt toplamı, `name/type/expires_at/status` sıralama ve name/vendor/owner araması eklendi. UI'da 25/50/100 sayfa boyutu, önceki/sonraki, toplam arama sonucu ve artan/azalan sıralama eklendi. Pano verisi liste filtresi/sayfalamasından bağımsız tam varlık listesi isteğiyle hesaplanıyor. Contacts yönetimi aşaması da tamamlandı.
 - **Mevcut konum:** M0 tamamlandı. M1'de contacts, asset CRUD, dashboard, maliyet, CSV export, audit ve liste arama/filtre/sıralama/sayfalama hazır; tür bazlı form alanları eksik. CSV içe aktarım opsiyonel. M2 kuyruk/eşik/scheduler hazır; bildirim kanalı, yenilendi ve snooze eksik. M3+ başlamadı.
 - **Çalışma ortamı:** Compose PostgreSQL `0008_contacts (head)`; backend/frontend yeniden build edilip başlatıldı. `/health` `ok`; mevcut demo varlık sayısı 4, veritabanına test kaydı yazılmadı.
