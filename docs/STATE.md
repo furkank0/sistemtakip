@@ -1,5 +1,14 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 — Codex — Sağlayıcı yönetimi
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** `vendors` tablosu ve geri alınabilir `0004_vendors` migration'ı eklendi. Varlıklar `vendor_id` ile sağlayıcılara bağlandı; eski serbest metin `vendor` alanı geriye dönük uyumluluk için korundu. Sağlayıcı listeleme/oluşturma/silme API'ları, varlık sağlayıcı filtresi ve CSV filtresi eklendi. Ayarlar ekranına sağlayıcı yönetimi, varlık formuna sağlayıcı seçimi ve Varlıklar ekranına sağlayıcı filtresi/sütunu eklendi.
+- **Örnek veriler:** Dört demo sağlayıcı oluşturuldu ve dört demo varlıkla ilişkilendirildi. Bu kayıtlar gerçek sistem verisi değildir.
+- **Doğrulama:** Compose PostgreSQL üzerinde `0004_vendors` migration'ı uygulandı. Chrome'da Ayarlar ekranında 4 sağlayıcı, Varlıklar ekranında sağlayıcı filtresi ve sağlayıcı sütunu doğrulandı. Backend testleri 9/9, Ruff, frontend `node --check` ve `git diff --check` başarılı.
+- **Yarım kalanlar:** Eski serbest metin sağlayıcı kayıtları otomatik normalize edilmiyor; mevcut demo kayıtları yeni ilişki alanına bağlandı. Aylık/yıllık maliyet ayrıştırması ve audit log temeli M1 içinde kaldı.
+- **Sıradaki adımlar:** M1'i tamamlamak için maliyet özetini aylık/yıllık ayrıştırmak ve temel audit log'u eklemek; ardından M2 yenileme uyarı motoruna geçmek.
+
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
 ## 2026-10-09 — Codex — Genel Bakış dashboard detayları

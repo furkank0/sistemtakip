@@ -36,6 +36,9 @@ class Asset(Base):
     type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     vendor: Mapped[str] = mapped_column(String(255), nullable=True)
+    vendor_id: Mapped[int] = mapped_column(
+        ForeignKey("vendors.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     owner: Mapped[str] = mapped_column(String(255), nullable=True)
     cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=True)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="TRY")
@@ -53,6 +56,17 @@ class Asset(Base):
     tags: Mapped[list["Tag"]] = relationship(
         secondary=asset_tags, back_populates="assets", order_by="Tag.name"
     )
+    vendor_record: Mapped["Vendor"] = relationship(back_populates="assets")
+
+
+class Vendor(Base):
+    __tablename__ = "vendors"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    support_email: Mapped[str] = mapped_column(String(255), nullable=True)
+    panel_url: Mapped[str] = mapped_column(String(500), nullable=True)
+    assets: Mapped[list[Asset]] = relationship(back_populates="vendor_record")
 
 
 class Tag(Base):

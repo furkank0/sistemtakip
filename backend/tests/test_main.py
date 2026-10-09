@@ -162,6 +162,34 @@ def test_asset_tags_can_be_created_assigned_filtered_and_cleared(client: TestCli
     assert unknown_tag.status_code == 422
 
 
+def test_vendor_can_be_managed_and_linked_to_assets(client: TestClient) -> None:
+    created_vendor = client.post(
+        "/api/vendors",
+        json={
+            "name": "Example Provider",
+            "support_email": "support@example.test",
+            "panel_url": "https://panel.example.test",
+        },
+    )
+    assert created_vendor.status_code == 201
+    vendor = created_vendor.json()
+
+    created_asset = client.post(
+        "/api/assets",
+        json={"type": "hosting", "name": "linked-hosting", "vendor_id": vendor["id"]},
+    )
+    assert created_asset.status_code == 201
+    assert created_asset.json()["vendor_id"] == vendor["id"]
+    assert created_asset.json()["vendor"] == vendor["name"]
+
+    filtered = client.get("/api/assets", params={"vendor_id": vendor["id"]})
+    assert filtered.status_code == 200
+    assert filtered.json()["total"] == 1
+
+    deleted = client.delete(f"/api/vendors/{vendor['id']}")
+    assert deleted.status_code == 204
+
+
 def test_dashboard_counts_assets_by_status_and_expiry(client: TestClient) -> None:
     today = date.today()
     for name, asset_type, asset_status, expires_at in (

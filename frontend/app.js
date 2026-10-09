@@ -4,6 +4,7 @@ const statusLabels = { active: "Aktif", expired: "Süresi geçti", cancelled: "�
 const $ = (selector) => document.querySelector(selector);
 let editingAssetId = null;
 let availableTags = [];
+let availableVendors = [];
 const pageMeta = {
   dashboard: ["VARLIK YÖNETİMİ", "Genel bakış"],
   assets: ["ENVANTER", "Varlıklar"],
@@ -49,6 +50,17 @@ function renderAssets(items) {
     : '<tr><td class="empty-state" colspan="6">Filtrelere uyan varlık bulunamadı.</td></tr>';
 }
 
+function renderVendorOptions() {
+  const filter = $("#vendor-filter"); const selectedFilter = filter.value;
+  filter.innerHTML = '<option value="">Tüm sağlayıcılar</option>' + availableVendors.map((vendor) => `<option value="${vendor.id}">${escapeHtml(vendor.name)}</option>`).join("");
+  filter.value = selectedFilter;
+  const assetVendor = $("#asset-vendor"); const selectedVendor = assetVendor.value;
+  assetVendor.innerHTML = '<option value="">Sağlayıcı seçin</option>' + availableVendors.map((vendor) => `<option value="${vendor.id}">${escapeHtml(vendor.name)}</option>`).join("");
+  assetVendor.value = selectedVendor;
+  $("#vendor-count").textContent = `${availableVendors.length} kayıt`;
+  $("#vendor-list").innerHTML = availableVendors.length ? availableVendors.map((vendor) => `<div class="provider-row"><div><strong>${escapeHtml(vendor.name)}</strong><span>${escapeHtml(vendor.support_email || "Destek e-postası belirtilmedi")}</span></div>${vendor.panel_url ? `<a class="text-link" href="${escapeHtml(vendor.panel_url)}" target="_blank" rel="noreferrer">Panele git →</a>` : ""}</div>`).join("") : '<div class="empty-panel">Henüz sağlayıcı eklenmedi.</div>';
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(value);
 }
@@ -75,14 +87,15 @@ function renderOverview(items) {
 
 async function loadDashboard() {
   clearError();
-  const type = $("#type-filter").value; const status = $("#status-filter").value; const tagId = $("#tag-filter").value;
+  const type = $("#type-filter").value; const status = $("#status-filter").value; const tagId = $("#tag-filter").value; const vendorId = $("#vendor-filter").value;
   try {
-    const [summary, data, tags] = await Promise.all([
+    const [summary, data, tags, vendors] = await Promise.all([
       request("/api/assets/dashboard"),
-      request(`/api/assets?limit=100${type ? `&type=${type}` : ""}${status ? `&status=${status}` : ""}${tagId ? `&tag_id=${tagId}` : ""}`),
+      request(`/api/assets?limit=100${type ? `&type=${type}` : ""}${status ? `&status=${status}` : ""}${tagId ? `&tag_id=${tagId}` : ""}${vendorId ? `&vendor_id=${vendorId}` : ""}`),
       request("/api/tags"),
+      request("/api/vendors"),
     ]);
-    availableTags = tags; renderTagOptions();
+    availableTags = tags; availableVendors = vendors; renderTagOptions(); renderVendorOptions();
     $("#total-count").textContent = summary.total; $("#active-count").textContent = summary.active;
     $("#expiring-count").textContent = summary.expiring_90_days; $("#expired-count").textContent = summary.expired;
     renderAssets(data.items); renderOverview(data.items);
@@ -101,7 +114,7 @@ function openCreate() {
 async function openEdit(assetId) {
   try {
     const asset = await request(`/api/assets/${assetId}`); editingAssetId = asset.id;
-    const form = $("#asset-form"); Object.entries(asset).forEach(([key, value]) => { const field = form.elements.namedItem(key); if (field && value != null && key !== "tags") field.value = value; }); setSelectedTags((asset.tags || []).map((tag) => tag.id));
+    const form = $("#asset-form"); Object.entries(asset).forEach(([key, value]) => { const field = form.elements.namedItem(key); if (field && value != null && key !== "tags" && key !== "vendor") field.value = value; }); setSelectedTags((asset.tags || []).map((tag) => tag.id));
     $("#dialog-eyebrow").textContent = "ENVANTERİ DÜZENLE"; $("#dialog-title").textContent = "Varlığı düzenle"; $("#save-asset").textContent = "Güncelle"; $("#asset-dialog").showModal();
   } catch (error) { showError("Varlık bilgisi alınamadı."); }
 }
@@ -115,6 +128,7 @@ async function deleteAsset(assetId) {
 async function saveAsset(event) {
   event.preventDefault(); const form = new FormData(event.target); const payload = Object.fromEntries(form.entries());
   payload.tag_ids = [...event.target.elements.namedItem("tag_ids").selectedOptions].map((option) => Number(option.value));
+  payload.vendor_id = payload.vendor_id ? Number(payload.vendor_id) : null; delete payload.vendor;
   if (!payload.expires_at) delete payload.expires_at; if (!payload.cost) delete payload.cost;
   try { await request(editingAssetId ? `/api/assets/${editingAssetId}` : "/api/assets", { method: editingAssetId ? "PATCH" : "POST", body: JSON.stringify(payload) }); $("#asset-dialog").close(); event.target.reset(); await loadDashboard(); }
   catch (error) { showError("Varlık kaydedilemedi. API ve veritabanı bağlantısını kontrol edin."); }
@@ -135,9 +149,10 @@ function setSelectedTags(tagIds) {
 
 function exportAssets() {
   const params = new URLSearchParams();
-  const type = $("#type-filter").value; const status = $("#status-filter").value; const tagId = $("#tag-filter").value;
+  const type = $("#type-filter").value; const status = $("#status-filter").value; const tagId = $("#tag-filter").value; const vendorId = $("#vendor-filter").value;
   if (type) params.set("type", type); if (status) params.set("status", status);
   if (tagId) params.set("tag_id", tagId);
+  if (vendorId) params.set("vendor_id", vendorId);
   window.location.href = `${API_BASE}/api/assets/export.csv?${params}`;
 }
 
@@ -147,6 +162,12 @@ document.querySelectorAll(".nav-link").forEach((link) => link.addEventListener("
 }));
 $("#asset-form").addEventListener("submit", saveAsset); $("#type-filter").addEventListener("change", loadDashboard);
 $("#status-filter").addEventListener("change", loadDashboard); $("#tag-filter").addEventListener("change", loadDashboard); $("#refresh-button").addEventListener("click", loadDashboard); $("#export-button").addEventListener("click", exportAssets);
+$("#vendor-filter").addEventListener("change", loadDashboard);
+$("#create-vendor").addEventListener("click", async () => {
+  const name = $("#vendor-name").value.trim(); if (!name) return;
+  try { await request("/api/vendors", { method: "POST", body: JSON.stringify({ name, support_email: $("#vendor-email").value.trim() || null, panel_url: $("#vendor-panel").value.trim() || null }) }); $("#vendor-name").value = ""; $("#vendor-email").value = ""; $("#vendor-panel").value = ""; await loadDashboard(); }
+  catch (error) { showError("Sağlayıcı eklenemedi."); }
+});
 $("#asset-rows").addEventListener("click", (event) => { const editButton = event.target.closest("[data-edit]"); const deleteButton = event.target.closest("[data-delete]"); if (editButton) openEdit(editButton.dataset.edit); if (deleteButton) deleteAsset(deleteButton.dataset.delete); });
 $("#search-input").addEventListener("input", () => { const query = $("#search-input").value.trim().toLocaleLowerCase("tr-TR"); document.querySelectorAll("#asset-rows tr").forEach((row) => { row.hidden = query && !row.textContent.toLocaleLowerCase("tr-TR").includes(query); }); });
 window.addEventListener("hashchange", () => navigateTo(window.location.hash.slice(1)));

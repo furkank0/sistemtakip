@@ -30,6 +30,7 @@ class AssetBase(BaseModel):
 
 class AssetCreate(AssetBase):
     tag_ids: list[int] = Field(default_factory=list)
+    vendor_id: int | None = Field(default=None, ge=1)
 
 
 class AssetUpdate(BaseModel):
@@ -47,6 +48,7 @@ class AssetUpdate(BaseModel):
     status: AssetStatus | None = None
     notes: str | None = None
     tag_ids: list[int] | None = None
+    vendor_id: int | None = Field(default=None, ge=1)
 
 
 class TagCreate(BaseModel):
@@ -59,6 +61,18 @@ class TagRead(TagCreate):
     id: int
 
 
+class VendorCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    support_email: str | None = Field(default=None, max_length=255)
+    panel_url: str | None = Field(default=None, max_length=500)
+
+
+class VendorRead(VendorCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+
+
 class AssetRead(AssetBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -66,6 +80,7 @@ class AssetRead(AssetBase):
     created_at: datetime
     updated_at: datetime
     tags: list[TagRead] = Field(default_factory=list)
+    vendor_id: int | None = None
 
 
 class AssetList(BaseModel):
