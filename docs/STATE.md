@@ -1,5 +1,34 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 14:54 — Copilot — M1 liste sayfalama ve sıralama
+
+- **Git durumu:** `ai/codex/m0-complete`, HEAD `5cfa11b`; contacts ve önceki maliyet/audit/M2 değişiklikleri dahil tüm worktree değişiklikleri yerel; commit/push yapılmadı. `.env` ignore kapsamında.
+- **Yapılanlar:** Asset list API'sine DB seviyesinde sayfalama, kayıt toplamı, `name/type/expires_at/status` sıralama ve name/vendor/owner araması eklendi. UI'da 25/50/100 sayfa boyutu, önceki/sonraki, toplam arama sonucu ve artan/azalan sıralama eklendi. Pano verisi liste filtresi/sayfalamasından bağımsız tam varlık listesi isteğiyle hesaplanıyor. Contacts yönetimi aşaması da tamamlandı.
+- **Mevcut konum:** M0 tamamlandı. M1'de contacts, asset CRUD, dashboard, maliyet, CSV export, audit ve liste arama/filtre/sıralama/sayfalama hazır; tür bazlı form alanları eksik. CSV içe aktarım opsiyonel. M2 kuyruk/eşik/scheduler hazır; bildirim kanalı, yenilendi ve snooze eksik. M3+ başlamadı.
+- **Çalışma ortamı:** Compose PostgreSQL `0008_contacts (head)`; backend/frontend yeniden build edilip başlatıldı. `/health` `ok`; mevcut demo varlık sayısı 4, veritabanına test kaydı yazılmadı.
+- **Doğrulama:** Backend pytest 15/15; Ruff check/format, mypy, `node --check`, Pylance API diagnostics ve `git diff --check` başarılı. Testler API paging offsets, out-of-range offset clamp, ascending/descending sort, case-insensitive search ve hatalı sort inputlarını kapsıyor. Canlı API `total=4`, `limit=2` ile iki sıralı kayıt döndürdü; tarayıcıda 4 kayıt, sıralama ve sayfa özeti doğrulandı. Python 3.14 üzerinde bağımlılıklardan deprecation uyarıları görüldü.
+- **Sıradaki sıra:** 1) Tür bazlı alan gereksinimlerini mevcut varlık alanları/API şemalarıyla eşle. 2) Formda tür seçimine göre alanları göster/gizle ve uygun doğrulamaları ekle. 3) CRUD ve UI testleriyle doğrula; M1'i kapat.
+- **Kullanıcıdan beklenen:** CSV içe aktarım opsiyonel kapsamda; kullanıcı talebi olmadan eklenmeyecek. Bildirim kanalı ve lisans vault-ref kararı açık.
+
+## 2026-10-09 14:49 — Copilot — M1 contacts yönetimi
+
+- **Git durumu:** `ai/codex/m0-complete`, HEAD `5cfa11b`; birikmiş maliyet/audit/M2 ve bu contacts değişiklikleri yerel, commit/push edilmedi. `.env` ignore kapsamında.
+- **Yapılanlar:** Contacts modeli ve asset-contact many-to-many ilişkisi, geri alınabilir `0008_contacts` migration'ı, contacts listele/oluştur/sil API'ları eklendi. Asset create/update/read kişi atamalarını destekliyor; audit diff kişi ilişki kimliklerini izliyor; CSV ilgili kişi adlarını içeriyor. Ayarlar ekranında kişi yönetimi ve varlık formunda çoklu kişi seçimi var.
+- **Mevcut konum:** M0 tamamlandı. M1 contacts dahil model/API kapsamını, pano/maliyet, CSV export ve temel audit'i içeriyor; UI sayfalama/kullanıcı kontrollü sıralama ve tür bazlı alanlar eksik. M2 eşik değerlendirmesi, günlük scheduler, tekrar önleme ve gönderimsiz kuyruk hazır; SMTP/digest kanal kararı bekliyor; yenilendi/snooze eksik. M3+ başlamadı.
+- **Migration / çalışma ortamı:** Compose PostgreSQL Alembic `0008_contacts (head)`; volume korunuyor. Uygulama `http://127.0.0.1:8080/`, `/health` `ok`.
+- **Doğrulama:** Backend pytest 14/14; Ruff lint/format, mypy, frontend `node --check`, Pylance diagnostics ve `git diff --check` başarılı. Contacts CRUD/asset assign/clear/delete, hatalı ID/boş ad ve CSV export test edildi. Tarayıcıda kişi yönetimi ve asset edit formundaki contact multi-select doğrulandı; DB'ye test kişisi veya varlığı eklenmedi.
+- **Sıradaki sıra:** 1) M1 liste arayüzü sayfalama ve kullanıcı kontrollü sıralama. 2) Domain/hosting/VDS/lisans alanlarını forma göre koşullu göster ve API şemalarıyla tutarlı yap. 3) M1 test/CI ile kapanış; sonra M2 yenilendi/snooze. SMTP/digest yalnızca kullanıcı kanal kararı sonrası.
+- **Kullanıcıdan beklenen:** Bildirim kanalı şimdilik ertelendi. Lisans anahtarı saklama kararı açık; vault-ref yaklaşımı korunmalı.
+
+## 2026-10-09 14:31 — Copilot — Yol haritası durumunu eşitleme
+
+- **Git durumu:** `ai/codex/m0-complete`, HEAD `5cfa11b`; önceki maliyet/audit/M2 değişiklikleri bu dalda yerel ve commit/push edilmedi. `.env` ignore kapsamında.
+- **Yapılanlar:** `AGENTS.md` ve bu belgede milestone işaretleri ayrıntılı plandaki gerçek ilerlemeyle eşleştirildi. M0 tamamlandı; M1 ve M2 kısmi olarak tanımlandı. Eski Docker/CI notları güncel doğrulamayla değiştirildi.
+- **Mevcut konum:** M0 tamamlandı. M1'in asset/vendor/tag CRUD, maliyet özeti/pano, CSV export ve temel audit kapsamı var; contacts modeli, arayüzde gerçek sayfalama ve kullanıcı kontrollü sıralama, varlık türüne özel form alanları eksik. M2'nin eşik değerlendirmesi, günlük scheduler, tekrar önleme ve gönderimsiz kuyruğu hazır; kullanıcı kanal kararını ertelediği için gönderim yok; yenilendi/snooze eksik. M3+ başlamadı.
+- **Önceki doğrulamalar:** 13/13 backend testi, Ruff, mypy, `node --check` ve `git diff --check` geçti. Compose PostgreSQL Alembic `0007_renewal_notifications (head)`, `/health` `ok`; tarayıcıda Ayarlar kuyruğu kontrol edildi. Tam migration zincirinin SQLite doğrulaması eski `0004_vendors` revision'ının SQLite uyumsuz constraint alter'ı nedeniyle bloklandı.
+- **Sıradaki sıra:** 1) M1 contacts modeli/API/migration/UI. 2) Liste UI sayfalaması ve kullanıcı kontrollü sıralama ile tür bazlı form alanları. 3) M1 test/CI ile kapatıldıktan sonra M2 yenilendi/snooze. SMTP/digest yalnızca kullanıcı kanal tercihi sonrası.
+- **Kullanıcıdan beklenen:** Bildirim kanalı şimdilik ertelendi. Lisans anahtarı saklama yaklaşımı kararı açık; M3'e geçmeden önce kalan M1 işlerini tamamlamak hedefleniyor.
+
 ## 2026-10-09 11:23 — Copilot — Oturum kapatışı
 
 - **Git durumu:** `ai/codex/m0-complete`; oturum başında `git pull --ff-only` çalıştırıldı. `origin/ai/codex/m0-complete` ile eşit ve çalışma ağacı başlangıçta temizdi.
@@ -120,7 +149,7 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 
 ## Açık Kararlar (Kullanıcıdan Bekleniyor)
 - [x] Teknoloji yığını: Python 3.12 + FastAPI + SQLAlchemy/Alembic + PostgreSQL 16 + APScheduler + HTMX
-- [ ] Bildirim kanalı (SMTP / Teams / Telegram)
+- [ ] Bildirim kanalı (SMTP / Teams / Telegram) — kullanıcı şimdilik erteledi; gönderim kapalı
 - [ ] Lisans anahtarları platformda saklanacak mı, yoksa sadece parola yöneticisi referansı mı?
 
 ## Karar Kayıtları
@@ -128,6 +157,8 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 |---|---|---|---|
 | 2026-10-08 | Sıfırdan kurulum; mevcut envanter/sistem yok, import gerekmiyor (M1'de CSV import opsiyonel) | Kullanıcı beyanı | Kullanıcı |
 | 2026-10-08 | M0 ve ilk sürüm için FastAPI + PostgreSQL + HTMX yığını seçildi | İç araçta sunucu tarafı HTML akışı, Next.js'e göre daha az frontend bakım yükü sunuyor | Codex (kullanıcının karar verme yetkisi vermesiyle) |
+| 2026-10-09 | Maliyet periyodu aylık/yıllık/tek seferlik/belirtilmemiş olarak tutulacak; eski kayıtlar belirtilmemiş kalacak ve farklı para birimleri ayrı gösterilecek | Kur dönüşümü veya eski kayıtların periyodu tahmin edilmeyecek | Kullanıcı |
+| 2026-10-09 | Bildirim kanalı seçimi ve dışa gönderim şimdilik ertelendi; uyarılar yalnızca veritabanı kuyruğunda birikir | SMTP/Teams/Telegram kararı verilene kadar dış sistemlere mesaj gitmemesi | Kullanıcı |
 
 ## Bağımlılık Gerekçeleri
 - `fastapi`, `sqlalchemy`, `alembic`, `psycopg`, `pydantic-settings`: API, ORM/migration, PostgreSQL bağlantısı ve ortam yapılandırması için.
@@ -135,12 +166,11 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 - `ruff`, `mypy`, `pytest`: CI lint, tür denetimi ve test altyapısı için sabit geliştirme bağımlılıkları.
 
 ## Bilinen Sorunlar
-- GitHub erişimi ve kimlik doğrulaması çalışıyor; `ai/codex/m0-scaffold` remote dalı yayınlandı.
-- Bu çalışma ortamında Docker komutu bulunmuyor; M0 Docker/HTTP doğrulaması yapılamadı.
-- Son GitHub Actions çalıştırması (`37839336795`) başarılı: `compose-config`, `backend-quality` ve `frontend-build` geçti.
-- `ai/codex/m0-scaffold` remote ile eşit; çalışma ağacı temiz.
-- Test/pytest adımı ve ayrı frontend lint adımı CI'da henüz yok.
-- GitHub repo görünürlüğü ve erişim durumu bu çalışma alanından doğrulanmadı.
+- Mevcut çalışma ortamında Docker Compose çalışıyor; servisler Up, PostgreSQL healthy ve `/health` `ok`.
+- CI yapılandırması (`.github/workflows/ci.yml`) backend Ruff lint/format, mypy, pytest; Compose config ve frontend image build adımlarını içeriyor. Bu yerel, henüz commit edilmemiş değişikliklerin GitHub Actions sonucu yok.
+- Yerel testler Python 3.14 ile çalıştırıldı; proje paketi Python `>=3.12,<3.13` hedefliyor ve Compose backend imajı Python 3.12 kullanıyor. Yerel deprecation uyarıları Python sürüm farkıyla ilişkili.
+- Migration zincirinin baştan SQLite üzerinde yürütülmesi mevcut `0004_vendors` migration'ının SQLite'ta desteklenmeyen foreign-key constraint ALTER işlemi nedeniyle mümkün değil; PostgreSQL Compose zinciri `0007_renewal_notifications` seviyesine başarıyla yükseldi.
+- M1/M2 açık maddeler yukarıda listelenmiştir; gerçek SMTP/webhook gönderimi kullanıcı kanal kararı olmadan devreye alınmamalı.
 
 ## Oturum Günlüğü
 ### 2026-10-08 — Claude

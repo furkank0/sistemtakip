@@ -14,7 +14,7 @@
 | GitHub repo (`furkank0/sistemtakip`) | Oluşturuldu; `main` üzerinde yalnızca boş `README.md`. **Public → Private yapılacak** |
 | Mevcut envanter / eski sistem | Yok; sıfırdan kurulum, zorunlu import yok |
 | Teknoloji yığını | Varsayılan öneri hazır, **kullanıcı teyidi bekliyor** |
-| Kod (M0–M6) | Başlanmadı |
+| Kod (M0–M6) | M0 tamamlandı; M1/M2 devam ediyor |
 
 ## 2. Kapsam
 
@@ -91,31 +91,34 @@ Varlık türüne özgü alanlar: `domain` (registrar, nameserver'lar, auto_renew
 Her milestone için **Bitti Tanımı (DoD):** kod + test + migration + doküman güncel + `STATE.md` güncel + CI yeşil.
 
 ### M0 — Temel İskele
-- [ ] Repo klasör yapısı, `.gitignore`, `.env.example`, `README.md` (kurulum adımları)
-- [ ] `deploy/docker-compose.yml`: `db`, `backend`, `frontend`, `proxy`
-- [ ] Backend: FastAPI iskeleti, `/health` ve `/version` endpoint'leri, config yönetimi (env)
-- [ ] Alembic init + ilk boş migration
-- [ ] CI: ruff + mypy + pytest (+ frontend lint/build)
-- [ ] pre-commit hook'ları
+- [x] Repo klasör yapısı, `.gitignore`, `.env.example`, `README.md` (kurulum adımları)
+- [x] `deploy/docker-compose.yml`: `db`, `backend`, `frontend`, `proxy`
+- [x] Backend: FastAPI iskeleti, `/health` ve `/version` endpoint'leri, config yönetimi (env)
+- [x] Alembic init + ilk boş migration
+- [x] CI: Ruff + mypy + pytest + frontend imaj build
+- [x] pre-commit hook'ları
 - **DoD:** `docker compose up` ile tüm servisler ayağa kalkar, `/health` 200 döner, CI yeşil.
 
 ### M1 — Varlık Yönetimi ve Pano
-- [ ] `assets`, `vendors`, `tags`, `contacts` modelleri ve migration'ları
-- [ ] CRUD API + validasyon (tarih tutarlılığı, zorunlu alanlar)
-- [ ] Liste ekranı: arama, filtre (tür, sağlayıcı, etiket, durum), sıralama, sayfalama
-- [ ] Detay/düzenleme formu (türe göre dinamik alanlar)
-- [ ] Pano: 30/60/90 gün içinde bitenler, süresi dolanlar, türe göre sayılar, aylık/yıllık maliyet özeti
-- [ ] CSV dışa aktarım; CSV içe aktarım (opsiyonel, şablonlu)
-- [ ] Temel audit log (oluşturma/güncelleme/silme)
+- [x] `assets`, `vendors`, `tags`, `contacts` modelleri ve migration'ları
+- [x] CRUD API + validasyon (tarih tutarlılığı, zorunlu alanlar)
+- [x] Liste ekranı: arama, filtre (tür, sağlayıcı, etiket, durum), sıralama, sayfalama
+- [ ] Detay/düzenleme formu (türe göre dinamik alanlar) — ortak form hazır; türe özel alanlar eksik
+- [x] Pano: 30/60/90 gün içinde bitenler, süresi dolanlar, türe göre sayılar, aylık/yıllık maliyet özeti
+- [x] CSV dışa aktarım
+- [ ] CSV içe aktarım (opsiyonel, şablonlu; yapılmadı)
+- [x] Temel audit log (oluşturma/güncelleme/silme)
+- **Durum:** Kısmen tamamlandı; contacts yönetimi ve liste arama/filtre/sıralama/sayfalama hazır. M1'i kapatmak için varlık türüne özel form alanları ve opsiyonel CSV içe aktarma kararı kalıyor.
 - **DoD:** Kullanıcı dört varlık türünü ekleyip düzenleyebilir; pano doğru hesaplar; API testleri geçer.
 
 ### M2 — Yenileme Uyarı Motoru
-- [ ] Uyarı kuralları: varsayılan 60/30/14/7/1 gün ve süresi dolduğunda; varlık bazında geçersiz kılma
-- [ ] Scheduler job'u: günlük çalışır, kuralları değerlendirir
-- [ ] Tekilleştirme: aynı varlık+eşik için tekrar gönderim yok (`notifications` tablosu)
+- [x] Uyarı kuralları: varsayılan 60/30/14/7/1 gün ve süresi dolduğunda; varlık bazında geçersiz kılma
+- [x] Scheduler job'u: günlük çalışır, kuralları değerlendirir
+- [x] Tekilleştirme: aynı varlık+eşik için tekrar gönderim yok (`notifications` tablosu)
 - [ ] SMTP e-posta gönderimi + günlük özet (digest) e-postası
 - [ ] "Yenilendi" aksiyonu: yeni bitiş tarihini girer, uyarı sayacını sıfırlar; "ertele/snooze"
-- [ ] Test modu (gerçek e-posta göndermeden önizleme)
+- [x] Test modu (gerçek e-posta göndermeden önizleme)
+- **Durum:** Kısmen tamamlandı; değerlendirme ve kuyruk çalışıyor. Kullanıcı kanal kararını ertelediği için dışarı gönderim kapalı. "Yenilendi" ve snooze akışları eksik.
 - **DoD:** Zaman mock'lanarak yazılmış testlerle eşikler doğru tetiklenir ve tekrarlanmaz.
 
 ### M3 — Günlük Rutin Kontrol Checklist'leri

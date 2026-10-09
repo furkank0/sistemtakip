@@ -1,16 +1,43 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from zoneinfo import ZoneInfo
+
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-untyped]
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
+from app.api import audit_router, contact_router, tag_router, vendor_router
 from app.api import router as asset_router
-from app.api import tag_router, vendor_router
+from app.renewal_alerts import router as notification_router
+from app.renewal_alerts import run_daily_renewal_evaluation
 from app.settings import settings
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+    scheduler = BackgroundScheduler(timezone=ZoneInfo("Europe/Istanbul"))
+    scheduler.add_job(
+        run_daily_renewal_evaluation,
+        "cron",
+        hour=8,
+        minute=0,
+        id="daily_renewal_evaluation",
+        replace_existing=True,
+    )
+    scheduler.start()
+    try:
+        yield
+    finally:
+        scheduler.shutdown(wait=False)
+
 
 app = FastAPI(
     title="sistemtakip API",
     version=settings.app_version,
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +48,9 @@ app.add_middleware(
 app.include_router(asset_router)
 app.include_router(tag_router)
 app.include_router(vendor_router)
+app.include_router(contact_router)
+app.include_router(audit_router)
+app.include_router(notification_router)
 
 
 @app.get("/health", tags=["system"])
