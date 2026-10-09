@@ -1,5 +1,15 @@
 # AI Oturum Geliştirme Günlüğü
 
+## 2026-10-09 16:34 Europe/Istanbul — Copilot — Responsive arayüz düzeni
+
+- **Dal / commit:** `ai/codex/m0-complete`; arayüz `5b9b845` (`fix: make pages responsive`) ile commit edildi. Bu durum/günlük kaydı ayrı commit edilecek; ikisi push edilecek.
+- **Yapılanlar:** Ana içerik ve kenar çubuğu genişliklerinin çakışması düzeltildi. 800px altında üst navigasyon; dar ekranda tek sütunlu sağlayıcı/kişi formları, uyarlanabilir panolar ve filtre toolbar'ı, tablo içi yatay kaydırma ve taşmayı azaltan kompakt audit detayları eklendi. Dar ekranlarda kayıt sayacı tek satır tutuluyor.
+- **Değişen dosyalar:** [styles.css](../frontend/styles.css), [app.js](../frontend/app.js), [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** `node --check frontend/app.js` ve `git diff --check` başarılı. `docker compose --env-file .env -f deploy/docker-compose.yml up -d --build frontend` başarılı. Tarayıcıda 350, 750 ve 1280 CSS px ölçülerinde dashboard/varlıklar/ayarlar açıldı; her durumda `documentElement.scrollWidth` ile `clientWidth` eşit, sayfa geneli yatay taşma yok. Varlık toolbar'ındaki filtreler ve mobil menü kontrol edildi. Backend kodu değişmediğinden backend testleri çalıştırılmadı.
+- **Yarım kalanlar / bilinen sorunlar:** Durum/günlük kaydını commit edip iki commit'i push et. M2 yenilendi akışı ile bildirim kanalı kararı açık; M3 başlamadı.
+- **Sonraki plan:** 1) Günlük kaydını commit edip mevcut AI dalına push et. 2) M2 yenilendi akışını tamamla. 3) Kanal kararı sonrasında bildirim gönderimini ele al, ardından M3'e geç.
+- **Kullanıcıdan beklenen:** SMTP/e-posta, Teams veya Telegram bildirim kanalı seçimi.
+
 ## 2026-10-09 16:27 Europe/Istanbul — Copilot — Sağlayıcı yönetimi commit/push
 
 - **Dal / commit:** `ai/codex/m0-complete`; özellik `8718975` (`feat: add provider management actions`) commit'iyle push edildi. Bu oturum günlüğü düzeltmesi ayrı docs commit'i olarak gönderiliyor.
