@@ -600,8 +600,43 @@ def test_vendor_can_be_managed_and_linked_to_assets(client: TestClient) -> None:
     assert filtered.status_code == 200
     assert filtered.json()["total"] == 1
 
+    other_vendor = client.post("/api/vendors", json={"name": "Other Provider"}).json()
+    updated = client.patch(
+        f"/api/vendors/{vendor['id']}",
+        json={
+            "name": "Renamed Provider",
+            "support_email": "new-support@example.test",
+            "panel_url": "https://new-panel.example.test",
+        },
+    )
+    assert updated.status_code == 200
+    assert updated.json()["name"] == "Renamed Provider"
+    assert updated.json()["support_email"] == "new-support@example.test"
+    asset_id = created_asset.json()["id"]
+    assert client.get(f"/api/assets/{asset_id}").json()["vendor"] == "Renamed Provider"
+    assert (
+        client.patch(
+            f"/api/vendors/{vendor['id']}", json={"name": other_vendor["name"]}
+        ).status_code
+        == 409
+    )
+    assert client.patch(f"/api/vendors/{vendor['id']}", json={"name": "  "}).status_code == 422
+    assert client.patch("/api/vendors/999", json={"name": "Missing"}).status_code == 404
+
     deleted = client.delete(f"/api/vendors/{vendor['id']}")
     assert deleted.status_code == 204
+    unlinked_asset = client.get(f"/api/assets/{asset_id}").json()
+    assert unlinked_asset["vendor_id"] is None
+    assert unlinked_asset["vendor"] == "Renamed Provider"
+    assert client.delete(f"/api/vendors/{vendor['id']}").status_code == 404
+
+    audit_entries = client.get("/api/audit-log").json()
+    assert any(
+        entry["entity"] == "vendor" and entry["action"] == "update" for entry in audit_entries
+    )
+    assert any(
+        entry["entity"] == "vendor" and entry["action"] == "delete" for entry in audit_entries
+    )
 
 
 def test_dashboard_counts_assets_by_status_and_expiry(client: TestClient) -> None:

@@ -290,13 +290,43 @@ class ContactRead(ContactCreate):
     id: int
 
 
-class VendorCreate(BaseModel):
+class VendorBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     support_email: str | None = Field(default=None, max_length=255)
     panel_url: str | None = Field(default=None, max_length=500)
 
+    @field_validator("name")
+    @classmethod
+    def normalize_vendor_name(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("vendor name cannot be blank")
+        return cleaned
 
-class VendorRead(VendorCreate):
+
+class VendorCreate(VendorBase):
+    pass
+
+
+class VendorUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    support_email: str | None = Field(default=None, max_length=255)
+    panel_url: str | None = Field(default=None, max_length=500)
+
+    @field_validator("name")
+    @classmethod
+    def normalize_vendor_name(cls, value: str | None) -> str | None:
+        if value is None:
+            raise ValueError("vendor name cannot be null")
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("vendor name cannot be blank")
+        return cleaned
+
+
+class VendorRead(VendorBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int

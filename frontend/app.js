@@ -2,16 +2,19 @@ const API_BASE = window.location.port === "5173" ? "http://127.0.0.1:8000" : "";
 const labels = { domain: "Domain", hosting: "Hosting", vds: "VDS", license: "Lisans" };
 const statusLabels = { active: "Aktif", expired: "Süresi geçti", cancelled: "İptal" };
 const auditActionLabels = { create: "Oluşturuldu", update: "Güncellendi", delete: "Silindi" };
+const auditEntityLabels = { asset: "Varlık", vendor: "Sağlayıcı", notification: "Bildirim" };
 const auditFieldLabels = {
   type: "tür", name: "ad", vendor: "sağlayıcı", vendor_id: "sağlayıcı", owner: "sorumlu",
   cost: "maliyet", currency: "para birimi", cost_period: "maliyet periyodu",
   starts_at: "başlangıç tarihi", expires_at: "bitiş tarihi", auto_renew: "otomatik yenileme",
   reminder_days: "hatırlatma günleri", snoozed_until: "erteleme bitişi",
+  support_email: "destek e-postası", panel_url: "panel adresi",
   status: "durum", tag_ids: "etiketler", contact_ids: "irtibat kişileri",
   notes: "not içeriği (değer saklanmaz)",
 };
 const $ = (selector) => document.querySelector(selector);
 let editingAssetId = null;
+let editingVendorId = null;
 let availableTags = [];
 let availableVendors = [];
 let availableContacts = [];
@@ -84,7 +87,22 @@ function renderVendorOptions() {
   assetVendor.innerHTML = '<option value="">Sağlayıcı seçin</option>' + availableVendors.map((vendor) => `<option value="${vendor.id}">${escapeHtml(vendor.name)}</option>`).join("");
   assetVendor.value = selectedVendor;
   $("#vendor-count").textContent = `${availableVendors.length} kayıt`;
-  $("#vendor-list").innerHTML = availableVendors.length ? availableVendors.map((vendor) => `<div class="provider-row"><div><strong>${escapeHtml(vendor.name)}</strong><span>${escapeHtml(vendor.support_email || "Destek e-postası belirtilmedi")}</span></div>${vendor.panel_url ? `<a class="text-link" href="${escapeHtml(vendor.panel_url)}" target="_blank" rel="noreferrer">Panele git →</a>` : ""}</div>`).join("") : '<div class="empty-panel">Henüz sağlayıcı eklenmedi.</div>';
+  $("#vendor-list").innerHTML = availableVendors.length ? availableVendors.map((vendor) => `
+    <div class="provider-row">
+      <div><strong>${escapeHtml(vendor.name)}</strong><span>${escapeHtml(vendor.support_email || "Destek e-postası belirtilmedi")}</span></div>
+      <div class="provider-actions">
+        ${vendor.panel_url ? `<a class="text-link" href="${escapeHtml(vendor.panel_url)}" target="_blank" rel="noreferrer">Panele git →</a>` : ""}
+        <button class="table-action" data-edit-vendor="${vendor.id}" type="button">Düzenle</button>
+        <button class="table-action delete" data-delete-vendor="${vendor.id}" type="button">Sil</button>
+      </div>
+    </div>`).join("") : '<div class="empty-panel">Henüz sağlayıcı eklenmedi.</div>';
+}
+
+function resetVendorForm() {
+  editingVendorId = null;
+  $("#vendor-form").reset();
+  $("#save-vendor").textContent = "+ Sağlayıcı ekle";
+  $("#cancel-vendor-edit").hidden = true;
 }
 
 function renderAuditLog(entries) {
@@ -96,7 +114,7 @@ function renderAuditLog(entries) {
     return `<tr>
       <td>${escapeHtml(new Date(entry.at).toLocaleString("tr-TR"))}</td>
       <td>${escapeHtml(auditActionLabels[entry.action] || entry.action)}</td>
-      <td>${escapeHtml(entry.entity)} #${entry.entity_id}</td>
+      <td>${escapeHtml(auditEntityLabels[entry.entity] || entry.entity)} #${entry.entity_id}</td>
       <td>${escapeHtml(details)}</td>
       <td>${escapeHtml(entry.actor)}</td>
     </tr>`;
@@ -315,10 +333,49 @@ $("#notification-rows").addEventListener("click", async (event) => {
     await loadDashboard();
   } catch (error) { showError("Yenileme uyarısı ertelenemedi."); }
 });
-$("#create-vendor").addEventListener("click", async () => {
-  const name = $("#vendor-name").value.trim(); if (!name) return;
-  try { await request("/api/vendors", { method: "POST", body: JSON.stringify({ name, support_email: $("#vendor-email").value.trim() || null, panel_url: $("#vendor-panel").value.trim() || null }) }); $("#vendor-name").value = ""; $("#vendor-email").value = ""; $("#vendor-panel").value = ""; await loadDashboard(); }
-  catch (error) { showError("Sağlayıcı eklenemedi."); }
+$("#vendor-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const values = {
+    name: $("#vendor-name").value.trim(),
+    support_email: $("#vendor-email").value.trim() || null,
+    panel_url: $("#vendor-panel").value.trim() || null,
+  };
+  try {
+    const path = editingVendorId ? `/api/vendors/${editingVendorId}` : "/api/vendors";
+    await request(path, {
+      method: editingVendorId ? "PATCH" : "POST",
+      body: JSON.stringify(values),
+    });
+    resetVendorForm();
+    await loadDashboard();
+  } catch (error) {
+    showError(editingVendorId ? "Sağlayıcı güncellenemedi." : "Sağlayıcı eklenemedi.");
+  }
+});
+$("#cancel-vendor-edit").addEventListener("click", resetVendorForm);
+$("#vendor-list").addEventListener("click", async (event) => {
+  const editButton = event.target.closest("[data-edit-vendor]");
+  const deleteButton = event.target.closest("[data-delete-vendor]");
+  if (editButton) {
+    const vendor = availableVendors.find((item) => item.id === Number(editButton.dataset.editVendor));
+    if (!vendor) return;
+    editingVendorId = vendor.id;
+    $("#vendor-name").value = vendor.name;
+    $("#vendor-email").value = vendor.support_email || "";
+    $("#vendor-panel").value = vendor.panel_url || "";
+    $("#save-vendor").textContent = "Değişiklikleri kaydet";
+    $("#cancel-vendor-edit").hidden = false;
+    $("#vendor-name").focus();
+    return;
+  }
+  if (!deleteButton) return;
+  const vendor = availableVendors.find((item) => item.id === Number(deleteButton.dataset.deleteVendor));
+  if (!vendor || !window.confirm(`"${vendor.name}" sağlayıcısını silmek istiyor musunuz? Bağlı varlıklardaki sağlayıcı kaydı kaldırılır ancak görünen sağlayıcı adı korunur.`)) return;
+  try {
+    await request(`/api/vendors/${vendor.id}`, { method: "DELETE" });
+    if (editingVendorId === vendor.id) resetVendorForm();
+    await loadDashboard();
+  } catch (error) { showError("Sağlayıcı silinemedi."); }
 });
 $("#create-contact").addEventListener("click", async () => {
   const name = $("#contact-name").value.trim();

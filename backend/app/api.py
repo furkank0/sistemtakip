@@ -9,6 +9,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -28,6 +29,7 @@ from app.schemas import (
     TagRead,
     VendorCreate,
     VendorRead,
+    VendorUpdate,
     invalid_asset_type_fields,
 )
 
@@ -146,6 +148,26 @@ def record_asset_audit(db: Session, action: str, asset: Asset, diff: dict[str, o
             action=action,
             entity="asset",
             entity_id=asset.id,
+            diff=diff,
+        )
+    )
+
+
+def vendor_snapshot(vendor: Vendor) -> dict[str, object]:
+    return {
+        "name": vendor.name,
+        "support_email": vendor.support_email,
+        "panel_url": vendor.panel_url,
+    }
+
+
+def record_vendor_audit(db: Session, action: str, vendor: Vendor, diff: dict[str, object]) -> None:
+    db.add(
+        AuditLog(
+            actor=AUDIT_ACTOR,
+            action=action,
+            entity="vendor",
+            entity_id=vendor.id,
             diff=diff,
         )
     )
@@ -378,13 +400,61 @@ def list_vendors(db: Session = Depends(get_db)) -> list[Vendor]:  # noqa: B008
 @vendor_router.post("", response_model=VendorRead, status_code=status.HTTP_201_CREATED)
 def create_vendor(payload: VendorCreate, db: Session = Depends(get_db)) -> Vendor:  # noqa: B008
     vendor = Vendor(**payload.model_dump())
-    vendor.name = vendor.name.strip()
-    if not vendor.name:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Vendor name is required"
-        )
     db.add(vendor)
-    db.commit()
+    try:
+        db.flush()
+        record_vendor_audit(db, "create", vendor, {"created": vendor_snapshot(vendor)})
+        db.commit()
+    except IntegrityError as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Vendor name already exists"
+        ) from error
+    db.refresh(vendor)
+    return vendor
+
+
+@vendor_router.patch("/{vendor_id}", response_model=VendorRead)
+def update_vendor(
+    vendor_id: int,
+    payload: VendorUpdate,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> Vendor:
+    vendor = db.get(Vendor, vendor_id)
+    if vendor is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vendor not found")
+
+    original = vendor_snapshot(vendor)
+    values = payload.model_dump(exclude_unset=True)
+    for field, value in values.items():
+        setattr(vendor, field, value)
+    updated = vendor_snapshot(vendor)
+    diff: dict[str, object] = {
+        field: {"old": original[field], "new": updated[field]}
+        for field in original
+        if original[field] != updated[field]
+    }
+    try:
+        if diff:
+            record_vendor_audit(db, "update", vendor, diff)
+            db.flush()
+            if original["name"] != vendor.name:
+                linked_assets = db.scalars(select(Asset).where(Asset.vendor_id == vendor.id)).all()
+                for asset in linked_assets:
+                    old_name = asset.vendor
+                    asset.vendor = vendor.name
+                    record_asset_audit(
+                        db,
+                        "update",
+                        asset,
+                        {"vendor": {"old": old_name, "new": vendor.name}},
+                    )
+        db.commit()
+    except IntegrityError as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Vendor name already exists"
+        ) from error
     db.refresh(vendor)
     return vendor
 
@@ -394,6 +464,16 @@ def delete_vendor(vendor_id: int, db: Session = Depends(get_db)) -> None:  # noq
     vendor = db.get(Vendor, vendor_id)
     if vendor is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vendor not found")
+    record_vendor_audit(db, "delete", vendor, {"deleted": vendor_snapshot(vendor)})
+    linked_assets = db.scalars(select(Asset).where(Asset.vendor_id == vendor.id)).all()
+    for asset in linked_assets:
+        record_asset_audit(
+            db,
+            "update",
+            asset,
+            {"vendor_id": {"old": vendor.id, "new": None}},
+        )
+        asset.vendor_id = None  # type: ignore[assignment]
     db.delete(vendor)
     db.commit()
 
