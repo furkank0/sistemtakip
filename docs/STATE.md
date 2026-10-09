@@ -1,6 +1,77 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 — Codex — Devir hazırlığı
+
+- **Git durumu:** `ai/codex/m0-complete` dalı GitHub'daki `origin/ai/codex/m0-complete` ile eşit ve çalışma ağacı temizdir. Son commit: `cd3264e feat: add vendor management Agent: other`.
+- **Tamamlanan kapsam:** M0 iskeleti ve Docker Compose; PostgreSQL/Alembic; FastAPI asset CRUD; dashboard; etiketler; CSV dışa aktarım; sol menü panelleri; demo veriler; sağlayıcı modeli, ilişkisi, API'ları ve arayüz yönetimi.
+- **Çalışan ortam:** Compose tanımı [deploy/docker-compose.yml](../deploy/docker-compose.yml) içindedir. Servisler PostgreSQL, backend, frontend ve Caddy proxy'dir. Uygulama proxy üzerinden `http://127.0.0.1:8080/` adresinde çalışır; API belgeleri `/api/docs` yolundadır. Docker yolu yeni PowerShell oturumlarında gerekirse `C:\Program Files\Docker\Docker\resources\bin` olarak PATH'e eklenmelidir.
+- **Demo durumu:** PostgreSQL'de 4 demo varlık, 2 demo etiket ve 4 demo sağlayıcı bulunmaktadır. Demo kayıtları gerçek sistem verisi değildir.
+- **Doğrulananlar:** Backend `pytest` 9/9, Ruff, frontend `node --check`, `git diff --check`; Chrome'da dashboard, varlıklar ve ayarlar ekranları doğrulandı. Python testleri `backend` klasöründen çalıştırılmalıdır: `..\.venv\Scripts\python.exe -m pytest tests -q`.
+- **Yarım kalanlar:** Eski serbest metin sağlayıcıların otomatik normalize edilmesi, aylık/yıllık maliyet ayrıştırması, audit log, gerçek otomatik kontroller ve kimlik doğrulama.
+- **Sıradaki somut adımlar:** 1) dashboard maliyetini aylık/yıllık özetle, 2) değişiklikleri audit log'a yaz, 3) M2 yenileme eşikleri ve SMTP bildirim motoruna geç.
+- **Devir notu:** Yeni ajan önce [AGENTS.md](../AGENTS.md) ve bu dosyayı okumalı, `git pull` yapmalı, mevcut dalı ezmemeli ve devam etmeden önce çalışma ağacını kontrol etmelidir.
+
+## 2026-10-09 — Codex — Sağlayıcı yönetimi
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** `vendors` tablosu ve geri alınabilir `0004_vendors` migration'ı eklendi. Varlıklar `vendor_id` ile sağlayıcılara bağlandı; eski serbest metin `vendor` alanı geriye dönük uyumluluk için korundu. Sağlayıcı listeleme/oluşturma/silme API'ları, varlık sağlayıcı filtresi ve CSV filtresi eklendi. Ayarlar ekranına sağlayıcı yönetimi, varlık formuna sağlayıcı seçimi ve Varlıklar ekranına sağlayıcı filtresi/sütunu eklendi.
+- **Örnek veriler:** Dört demo sağlayıcı oluşturuldu ve dört demo varlıkla ilişkilendirildi. Bu kayıtlar gerçek sistem verisi değildir.
+- **Doğrulama:** Compose PostgreSQL üzerinde `0004_vendors` migration'ı uygulandı. Chrome'da Ayarlar ekranında 4 sağlayıcı, Varlıklar ekranında sağlayıcı filtresi ve sağlayıcı sütunu doğrulandı. Backend testleri 9/9, Ruff, frontend `node --check` ve `git diff --check` başarılı.
+- **Yarım kalanlar:** Eski serbest metin sağlayıcı kayıtları otomatik normalize edilmiyor; mevcut demo kayıtları yeni ilişki alanına bağlandı. Aylık/yıllık maliyet ayrıştırması ve audit log temeli M1 içinde kaldı.
+- **Sıradaki adımlar:** M1'i tamamlamak için maliyet özetini aylık/yıllık ayrıştırmak ve temel audit log'u eklemek; ardından M2 yenileme uyarı motoruna geçmek.
+
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
+
+## 2026-10-09 — Codex — Genel Bakış dashboard detayları
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Genel Bakış yalnızca sayaç gösteren yapıdan çıkarıldı. Yaklaşan yenilemeler tablosu, varlık türü dağılımı ve kayıtlı toplam maliyet özeti eklendi. Yenileme satırları kalan gün sayısını hesaplıyor ve 30 gün altını vurguluyor.
+- **Doğrulama:** Frontend Docker imajı yeniden oluşturuldu. Chrome üzerinde 4 demo varlık; `demo-web-hosting` için 42 gün, `demo.example.com` için 84 gün ve toplam `₺30.650` kayıtlı maliyet görünür olarak doğrulandı. `node --check` ve `git diff --check` başarılı.
+- **Sıradaki adımlar:** Sağlayıcı yönetimi ve filtresini eklemek; maliyet özetini aylık/yıllık ayrıştırmak; audit log temelini oluşturmak.
+
+## 2026-10-09 — Codex — Sol menü panelleri
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Sol menü hash tabanlı çalışan sayfa geçişlerine dönüştürüldü. Genel Bakış ve Varlıklar ayrıştırıldı; Kontroller paneline RDAP/WHOIS, TLS, DNS/HTTP ve TCP/ICMP hazırlık kartları eklendi. Ayarlar paneline API bağlantı durumu, Compose PostgreSQL bilgisi ve Swagger bağlantısı eklendi. Aktif menü, sayfa başlığı ve yeni varlık düğmesi seçili panele göre güncelleniyor.
+- **Doğrulama:** Frontend Docker imajı yeniden oluşturuldu. Chrome üzerinde `#checks` ve `#settings` ekranları açıldı; Ayarlar ekranı API durumunu `Bağlı`, Kontroller ekranı dört planlanan kontrol kartını gösterdi. `node --check` ve `git diff --check` başarılı.
+- **Yarım kalanlar:** Kontroller ekranı şu an hazırlık paneli; uç nokta modeli ve gerçek scheduler M4 aşamasında eklenecek. Sağlayıcı tablosu, maliyet özeti ve temel audit log da M1 içinde kaldı.
+- **Sıradaki adımlar:** Sağlayıcı tablosu ve seçim/filtre akışını eklemek; ardından pano maliyet özetini ve audit log temelini tamamlamak.
+
+## 2026-10-09 — Codex — Etiket ilişkileri
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** `tags` ve `asset_tags` tabloları ile geri alınabilir `0003_tags` migration'ı eklendi. Etiket oluşturma/listeleme/silme API'ları, varlık oluşturma/güncellemede `tag_ids`, varlık listesi ve CSV dışa aktarımında `tag_id` filtresi eklendi. Arayüzde etiket filtresi, çoklu etiket seçimi ve tabloda etiket gösterimi eklendi. Mevcut serbest metin sağlayıcı alanı geriye dönük uyumluluk için korundu.
+- **Örnek veriler:** Demo ortamına 4 örnek varlık eklendi: domain, hosting, VDS ve lisans. İki demo etiketi kullanılıyor (`Demo - Kritik`, `Demo - Yenileme`); kayıtlar gerçek sistem verisi değildir.
+- **Testler:** Backend testleri 8/8 geçti; Ruff, frontend `node --check` ve diff kontrolü başarılı.
+- **Doğrulama:** Compose imajları yeniden oluşturuldu; PostgreSQL üzerinde `0003_tags` migration'ı başarıyla uygulandı. Proxy üzerinden tag oluşturma, varlık etiketleme, `tag_id` filtreleme, CSV dışa aktarım ve temizleme smoke testi geçti.
+- **Yarım kalanlar:** Sağlayıcıların normalize edilmesi, maliyet özeti ve temel audit log dilimleri kaldı.
+- **Sıradaki adımlar:** Sağlayıcı tablosu ve varlık-provider ilişkisine geçmek; sağlayıcı filtresini arayüze taşımak; maliyet özeti eklemek.
+
+## 2026-10-09 — Codex — CSV dışa aktarım
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** `GET /api/assets/export.csv` endpoint'i eklendi. `type` ve `status` filtrelerini destekliyor, tüm varlık alanlarını UTF-8 BOM'lu CSV olarak indiriyor ve Excel uyumluluğu için ek dosya başlığı gönderiyor. Arayüzde seçili filtrelerle çalışan `CSV indir` düğmesi eklendi.
+- **Doğrulama:** Compose imajları yeniden oluşturuldu; proxy üzerinden filtreli CSV endpoint'i HTTP 200 döndü. Yanıt `Content-Disposition` ile indirilebilir ve UTF-8 BOM içeriyor.
+- **Testler:** Backend testleri 7/7 geçti; Ruff ve frontend `node --check` başarılı.
+- **Yarım kalanlar:** M1'de sağlayıcı/tag modelleri, maliyet özeti ve audit log dilimi kaldı. CSV içe aktarım opsiyonel olduğu için bu adımda eklenmedi.
+- **Sıradaki adımlar:** Sağlayıcı/tag veri modeline ve migration'ına geçmek; varlık filtrelerini sağlayıcı/etiket ile genişletmek; maliyet özeti ve temel audit log dilimini tamamlamak.
+
+## 2026-10-09 — Codex — Docker Compose doğrulaması
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Docker Desktop 4.94.0 kuruldu ve Docker Engine/Compose v5.5.1 doğrulandı. `deploy/docker-compose.yml` stack'i PostgreSQL, backend, frontend ve Caddy proxy ile başarıyla çalışıyor. Backend imajına Alembic dosyaları eklendi ve container başlangıcında `alembic upgrade head` çalışacak şekilde ayarlandı; PostgreSQL üzerinde `0001_initial` ve `0002_assets` migration'ları başarıyla uygulandı. Frontend imajına CSS/JS dosyaları eklendi. Compose proxy kullanımında API'nin aynı origin üzerinden çağrılması düzeltildi.
+- **Doğrulama:** `http://127.0.0.1:8080/`, `/health`, `/api/docs`, `/styles.css`, `/app.js` ve `/api/assets/dashboard` HTTP 200 döndü. Chrome üzerinde dashboard arayüzü açıldı; başlangıç verisi olmadığı için özet kartları ve tablo 0 kayıt gösteriyor.
+- **Testler:** Önceki backend 6 test, Ruff/mypy ve frontend `node --check` kontrolleri başarılı. Compose build, servis sağlığı ve gerçek PostgreSQL migration akışı başarılı.
+- **Yarım kalanlar:** Docker Compose tarafında teknik blokaj kalmadı. Örnek varlık kaydı eklenmedi; kullanıcı arayüzden kendi kayıtlarını girebilir. Yeni terminalde Docker Desktop PATH'i yenilenene kadar mevcut shell'de Docker yolu açıkça eklenebilir.
+- **Sıradaki adımlar:** Bu Docker düzeltmelerini commit etmek; M1 kapsamında sağlayıcı/tag ilişkileri ve CSV dışa aktarımını eklemek; ardından M2 yenileme uyarı motoruna geçmek.
+
+## 2026-10-09 — Codex
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Proje güncellendi; Docker erişiminin olmadığı doğrulandı; yerel geliştirme için SQLite fallback'i eklendi; `alembic upgrade head` başarıyla çalıştı; backend `http://127.0.0.1:8000`, frontend `http://127.0.0.1:5173` adreslerinde başlatıldı. FastAPI endpoint testleri eklendi ve CI'a pytest adımı eklendi. M1'in ilk dilimi olarak `assets` SQLAlchemy modeli, `0002_assets` migration'ı, create/list/detail/update/delete API'ları, tip/durum filtreleri, sayfalama ve `/api/assets/dashboard` özet endpoint'i eklendi. Frontend'e responsive dashboard, özet kartları, varlık tablosu, filtreler, yeni varlık modal formu ve düzenle/sil işlemleri eklendi. Gerçek SQLite dosyasında create/list/delete smoke testi geçti; yeniden çalıştırılabilir VS Code görevleri eklendi.
+- **Testler:** `pytest` 6 test geçti; Ruff lint/format, mypy ve frontend `node --check` geçti; OpenAPI rotaları, `/health`, dashboard ve UI HTTP 200 ile doğrulandı.
+- **Yarım kalanlar:** Docker Desktop/Engine bu makinede kurulu olmadığı için PostgreSQL + Caddy Compose stack'i ve gerçek PostgreSQL migration testi yapılamadı. Python proje aralığı `>=3.12,<3.13`, makinedeki yerel yorumlayıcı 3.14.2; Docker/üretim uyumluluğu için Python 3.12 kurulmalı.
+- **Sıradaki adımlar:** Docker ve Python 3.12 kurulumundan sonra migration'ı PostgreSQL üzerinde çalıştırıp Compose stack'ini proxy üzerinden doğrulamak; sağlayıcı/tag ilişkilerini ve CSV dışa aktarımını eklemek; M1 tamamlanınca yenileme uyarı motoruna geçmek.
 
 - **Son güncelleyen:** Codex — M0 Compose CI sonucu
 - **Tarih:** 2026-10-08

@@ -3,13 +3,94 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>sistemtakip</title>
+    <meta name="description" content="Kurum içi varlık ve sistem takip platformu">
+    <title>sistemtakip | Varlık yönetimi</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
   </head>
   <body>
-    <main>
-      <h1>sistemtakip</h1>
-      <p>Kurum içi varlık ve sistem takip platformu.</p>
-      <p>Başlangıç iskeleti hazır. API sağlık durumu: <a href="/health">/health</a></p>
-    </main>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">S</span><span>sistemtakip</span></div>
+        <nav aria-label="Ana menü">
+          <a class="nav-link active" data-section="dashboard" href="#dashboard"><span>▦</span> Genel bakış</a>
+          <a class="nav-link" data-section="assets" href="#assets"><span>◈</span> Varlıklar</a>
+          <a class="nav-link" data-section="checks" href="#checks"><span>✓</span> Kontroller</a>
+          <a class="nav-link" data-section="settings" href="#settings"><span>⚙</span> Ayarlar</a>
+        </nav>
+        <div class="sidebar-footer"><span class="status-dot"></span> Sistem hazır</div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div><p class="eyebrow" id="page-eyebrow">VARLIK YÖNETİMİ</p><h1 id="page-title">Genel bakış</h1></div>
+          <button class="primary-button" id="open-create" type="button">+ Yeni varlık</button>
+        </header>
+
+        <section id="dashboard" class="dashboard-grid page-section" data-page-section="dashboard" aria-label="Özet bilgiler">
+          <article class="stat-card"><div class="stat-icon blue">◈</div><div><p>Toplam varlık</p><strong id="total-count">—</strong></div></article>
+          <article class="stat-card"><div class="stat-icon green">✓</div><div><p>Aktif</p><strong id="active-count">—</strong></div></article>
+          <article class="stat-card"><div class="stat-icon amber">!</div><div><p>90 gün içinde biten</p><strong id="expiring-count">—</strong></div></article>
+          <article class="stat-card"><div class="stat-icon red">↘</div><div><p>Süresi geçen</p><strong id="expired-count">—</strong></div></article>
+        </section>
+
+        <section class="overview-panels page-section" data-page-section="dashboard" aria-label="Dashboard detayları">
+          <article class="content-card overview-card"><div class="section-heading"><div><h2>Yaklaşan yenilemeler</h2><p>En yakın bitiş tarihleri.</p></div><a class="text-link" href="#assets" data-section="assets">Tüm varlıklar →</a></div><div class="table-wrap"><table><thead><tr><th>Varlık</th><th>Tür</th><th>Bitiş</th><th>Kalan</th></tr></thead><tbody id="renewal-rows"><tr><td class="empty-state" colspan="4">Veriler yükleniyor...</td></tr></tbody></table></div></article>
+          <article class="content-card overview-card"><div class="section-heading"><div><h2>Envanter dağılımı</h2><p>Türlere göre varlık sayısı.</p></div><span class="record-count" id="registered-cost">—</span></div><div class="breakdown-list" id="type-breakdown"><div class="empty-panel">Dağılım hesaplanıyor...</div></div></article>
+        </section>
+
+        <section class="content-card page-section" data-page-section="assets" id="assets">
+          <div class="section-heading"><div><h2>Varlıklar</h2><p>Domain, hosting, VDS ve lisans envanteriniz.</p></div><span class="record-count" id="record-count">0 kayıt</span></div>
+          <div class="toolbar">
+            <label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Varlık ara..."></label>
+            <select id="type-filter" aria-label="Varlık türü"><option value="">Tüm türler</option><option value="domain">Domain</option><option value="hosting">Hosting</option><option value="vds">VDS</option><option value="license">Lisans</option></select>
+            <select id="status-filter" aria-label="Varlık durumu"><option value="">Tüm durumlar</option><option value="active">Aktif</option><option value="expired">Süresi geçti</option><option value="cancelled">İptal</option></select>
+            <select id="tag-filter" aria-label="Etiket"><option value="">Tüm etiketler</option></select>
+            <select id="vendor-filter" aria-label="Sağlayıcı"><option value="">Tüm sağlayıcılar</option></select>
+            <button class="ghost-button" id="export-button" type="button">⇩ CSV indir</button><button class="ghost-button" id="refresh-button" type="button">↻ Yenile</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Varlık</th><th>Tür</th><th>Sağlayıcı</th><th>Bitiş tarihi</th><th>Durum</th><th>İşlemler</th></tr></thead><tbody id="asset-rows"><tr><td class="empty-state" colspan="6">Varlıklar yükleniyor...</td></tr></tbody></table></div>
+        </section>
+
+        <section class="content-card page-section" data-page-section="checks" id="checks" hidden>
+          <div class="section-heading"><div><h2>Kontroller</h2><p>Sistem uç noktaları ve yenileme kontrolleri için hazırlık alanı.</p></div><span class="record-count">M4 hazırlığı</span></div>
+          <div class="check-grid">
+            <article class="info-card"><div class="info-icon blue">◎</div><div><h3>RDAP / WHOIS</h3><p>Domain bitiş tarihi kontrolü</p></div><span class="status-pill planned">Planlandı</span></article>
+            <article class="info-card"><div class="info-icon green">⌁</div><div><h3>TLS sertifikası</h3><p>Sertifika geçerlilik süresi</p></div><span class="status-pill planned">Planlandı</span></article>
+            <article class="info-card"><div class="info-icon amber">↔</div><div><h3>DNS / HTTP</h3><p>Çözümleme ve erişilebilirlik</p></div><span class="status-pill planned">Planlandı</span></article>
+            <article class="info-card"><div class="info-icon red">◌</div><div><h3>TCP / ICMP</h3><p>Sunucu erişilebilirlik kontrolü</p></div><span class="status-pill planned">Planlandı</span></article>
+          </div>
+          <div class="empty-panel"><strong>Henüz otomatik kontrol tanımlanmadı</strong><span>Bir sonraki aşamada varlık uç noktaları ve kontrol profilleri bu ekrandan yönetilecek.</span></div>
+        </section>
+
+        <section class="content-card page-section" data-page-section="settings" id="settings" hidden>
+          <div class="section-heading"><div><h2>Ayarlar</h2><p>Uygulama bağlantısı ve çalışma ortamı bilgileri.</p></div><span class="record-count">Yerel ortam</span></div>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>API bağlantısı</strong><span>FastAPI servis erişimi</span></div><span class="status-pill online" id="api-status">Kontrol ediliyor...</span></div>
+            <div class="setting-row"><div><strong>Veritabanı</strong><span>Compose PostgreSQL bağlantısı</span></div><span class="status-pill online">Compose</span></div>
+            <div class="setting-row"><div><strong>API belgeleri</strong><span>Endpoint ve şema referansı</span></div><a class="text-link" href="/api/docs" target="_blank" rel="noreferrer">Swagger’ı aç →</a></div>
+          </div>
+          <div class="provider-management"><div class="section-heading"><div><h2>Sağlayıcılar</h2><p>Varlık sağlayıcılarını merkezi olarak yönetin.</p></div><span class="record-count" id="vendor-count">0 kayıt</span></div><div class="provider-form"><input id="vendor-name" maxlength="255" placeholder="Sağlayıcı adı"><input id="vendor-email" maxlength="255" type="email" placeholder="Destek e-postası"><input id="vendor-panel" maxlength="500" type="url" placeholder="Panel URL'i"><button class="primary-button" id="create-vendor" type="button">+ Sağlayıcı ekle</button></div><div class="provider-list" id="vendor-list"></div></div>
+        </section>
+        <p class="error-banner hidden" id="error-banner"></p>
+      </main>
+    </div>
+
+    <dialog id="asset-dialog">
+      <form method="dialog" id="asset-form">
+        <div class="dialog-heading"><div><p class="eyebrow" id="dialog-eyebrow">ENVANTERE EKLE</p><h2 id="dialog-title">Yeni varlık</h2></div><button class="icon-button" value="cancel" aria-label="Kapat">×</button></div>
+        <div class="form-grid">
+          <label>Ad / hostname<input name="name" required maxlength="255" placeholder="example.com"></label>
+          <label>Tür<select name="type" required><option value="domain">Domain</option><option value="hosting">Hosting</option><option value="vds">VDS</option><option value="license">Lisans</option></select></label>
+          <label>Sağlayıcı<select name="vendor_id" id="asset-vendor"><option value="">Sağlayıcı seçin</option></select></label>
+          <label>Sorumlu<input name="owner" maxlength="255" placeholder="Ekip veya kişi"></label>
+          <label>Etiketler<select name="tag_ids" id="asset-tags" multiple size="3"></select></label>
+          <label>Bitiş tarihi<input name="expires_at" type="date"></label>
+          <label>Maliyet<input name="cost" type="number" min="0" step="0.01" placeholder="0.00"></label>
+        </div>
+        <label class="full-field">Notlar<textarea name="notes" rows="3" placeholder="İsteğe bağlı not"></textarea></label>
+        <div class="dialog-actions"><button class="ghost-button" value="cancel">Vazgeç</button><button class="primary-button" id="save-asset" value="default">Kaydet</button></div>
+      </form>
+    </dialog>
   </body>
 </html>
