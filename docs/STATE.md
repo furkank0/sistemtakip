@@ -1,5 +1,15 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 16:55 — Copilot — M2 yenilendi akışı
+
+- **Git durumu:** `ai/codex/m0-complete`; bu özellik ve teslim kaydı commit/push bekliyor.
+- **Yapılanlar:** `POST /api/assets/{id}/renew` yeni bitiş tarihi doğrulamasıyla eklendi. Yenileme, süresi geçmiş varlığı aktif eder; eski döneme ait bekleyen bildirimleri `renewed` durumuna geçirip asset ve bildirim değişikliklerini audit'e yazar. Uyarı kuyruğundan açılan modal yeni tarihi alıyor; yeni expiry değeri yeni bildirim döngüsünün anahtarıdır. İptal edilmiş, bitiş tarihi olmayan ya da bitiş tarihi ileri alınmayan varlıklar reddedilir.
+- **Değişen dosyalar:** [backend/app/api.py](../backend/app/api.py), [backend/app/schemas.py](../backend/app/schemas.py), [backend/tests/test_main.py](../backend/tests/test_main.py), [frontend/app.js](../frontend/app.js), [frontend/index.html](../frontend/index.html), [docs/PLAN.md](./PLAN.md), [docs/STATE.md](./STATE.md), [docs/AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** Backend pytest 19/19; Ruff check/format, mypy, Pylance diagnostics, `node --check` ve `git diff --check` başarılı. Backend ve frontend Compose imajları build edilip başlatıldı; `/health` `ok`. Tarayıcı API mock'u ile modal, min tarih, POST payload ve başarı mesajı doğrulandı; kapat/vazgeç eylemleri POST göndermiyor. UI testinde gerçek veritabanına yazılmadı. Bağımlılıklardan Python 3.14 deprecation uyarıları devam ediyor.
+- **Yarım kalanlar / bilinenler:** SMTP e-posta/digest, kullanıcı kanal kararı beklediğinden kapalı. Bildirim eyleminin tarayıcı testi API mock'u ile yapılmış; backend davranışı gerçek DB'li pytest ile test edilmiştir.
+- **Sıradaki sıra:** 1) Kullanıcı bildirim kanalını seçene kadar dış gönderimi kapalı tut. 2) M2 teslim/durum kaydını push et. 3) M3 checklist şablonlarının CRUD ve çalıştırma akışına geç.
+- **Kullanıcıdan beklenen:** E-posta/SMTP, Teams veya Telegram kanal tercihi.
+
 ## 2026-10-09 16:39 — Copilot — Responsive arayüz teslim kaydı
 
 - **Git durumu:** `ai/codex/m0-complete`; responsive arayüz `5b9b845`, durum/günlük kaydı `c3ea5bf` commit'leriyle `origin/ai/codex/m0-complete` dalına push edildi; yerel ve uzak HEAD eşit, çalışma ağacı temiz.

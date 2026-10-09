@@ -442,6 +442,126 @@ def test_pending_notification_can_be_snoozed_and_audited(client: TestClient) -> 
     assert client.post("/api/notifications/999/snooze", json={"days": 1}).status_code == 404
 
 
+def test_asset_renewal_closes_pending_alerts_and_starts_a_new_cycle(
+    client: TestClient,
+) -> None:
+    today = date.today()
+    old_expiry = today + timedelta(days=1)
+    new_expiry = today + timedelta(days=120)
+    asset = client.post(
+        "/api/assets",
+        json={
+            "type": "domain",
+            "name": "renew.example",
+            "expires_at": old_expiry.isoformat(),
+            "status": "expired",
+        },
+    ).json()
+    evaluated = client.post("/api/notifications/evaluate", params={"date": today.isoformat()})
+    notification = evaluated.json()["notifications"][0]
+    client.post(f"/api/notifications/{notification['id']}/snooze", json={"days": 3})
+
+    renewed = client.post(
+        f"/api/assets/{asset['id']}/renew",
+        json={"expires_at": new_expiry.isoformat()},
+    )
+    assert renewed.status_code == 200
+    assert renewed.json()["expires_at"] == new_expiry.isoformat()
+    assert renewed.json()["status"] == "active"
+
+    old_notification = client.get("/api/notifications").json()[0]
+    assert old_notification["id"] == notification["id"]
+    assert old_notification["status"] == "renewed"
+
+    audit_log = client.get("/api/audit-log").json()
+    asset_audit = next(
+        entry for entry in audit_log if entry["entity"] == "asset" and entry["action"] == "update"
+    )
+    assert asset_audit["diff"]["expires_at"] == {
+        "old": old_expiry.isoformat(),
+        "new": new_expiry.isoformat(),
+    }
+    assert asset_audit["diff"]["status"] == {"old": "expired", "new": "active"}
+    notification_audit = next(
+        entry
+        for entry in audit_log
+        if entry["entity"] == "notification" and entry["entity_id"] == notification["id"]
+    )
+    assert notification_audit["diff"]["status"]["new"] == "renewed"
+
+    next_cycle_date = new_expiry - timedelta(days=60)
+    next_cycle = client.post(
+        "/api/notifications/evaluate",
+        params={"date": next_cycle_date.isoformat()},
+    )
+    assert next_cycle.status_code == 200
+    assert next_cycle.json()["created_count"] == 1
+    assert next_cycle.json()["notifications"][0]["rule"] == "days:60"
+
+
+def test_asset_renewal_validates_asset_and_new_expiry(client: TestClient) -> None:
+    today = date.today()
+    expired_asset = client.post(
+        "/api/assets",
+        json={
+            "type": "domain",
+            "name": "expired-renew.example",
+            "expires_at": (today - timedelta(days=2)).isoformat(),
+            "status": "expired",
+        },
+    ).json()
+    no_expiry_asset = client.post(
+        "/api/assets",
+        json={"type": "vds", "name": "no-expiry.example"},
+    ).json()
+    cancelled_asset = client.post(
+        "/api/assets",
+        json={
+            "type": "hosting",
+            "name": "cancelled-renew.example",
+            "expires_at": (today + timedelta(days=10)).isoformat(),
+            "status": "cancelled",
+        },
+    ).json()
+
+    assert (
+        client.post(
+            f"/api/assets/{expired_asset['id']}/renew",
+            json={"expires_at": (today + timedelta(days=3)).isoformat()},
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            f"/api/assets/{expired_asset['id']}/renew",
+            json={"expires_at": (today + timedelta(days=3)).isoformat()},
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            f"/api/assets/{no_expiry_asset['id']}/renew",
+            json={"expires_at": (today + timedelta(days=30)).isoformat()},
+        ).status_code
+        == 409
+    )
+    assert (
+        client.post(
+            f"/api/assets/{cancelled_asset['id']}/renew",
+            json={"expires_at": (today + timedelta(days=30)).isoformat()},
+        ).status_code
+        == 409
+    )
+    assert (
+        client.post(
+            "/api/assets/999/renew",
+            json={"expires_at": (today + timedelta(days=30)).isoformat()},
+        ).status_code
+        == 404
+    )
+    assert client.post(f"/api/assets/{expired_asset['id']}/renew", json={}).status_code == 422
+
+
 def test_asset_crud_is_audited_and_note_values_are_redacted(client: TestClient) -> None:
     created = client.post(
         "/api/assets",

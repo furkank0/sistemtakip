@@ -1,10 +1,11 @@
 import csv
 import json
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from io import StringIO
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
@@ -13,12 +14,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Asset, AuditLog, Contact, Tag, Vendor
+from app.models import Asset, AuditLog, Contact, Notification, Tag, Vendor
 from app.schemas import (
     TYPE_SPECIFIC_FIELDS,
     AssetCreate,
     AssetList,
     AssetRead,
+    AssetRenewalRequest,
     AssetUpdate,
     AuditLogRead,
     ContactCreate,
@@ -40,6 +42,7 @@ contact_router = APIRouter(prefix="/api/contacts", tags=["contacts"])
 audit_router = APIRouter(prefix="/api/audit-log", tags=["audit"])
 
 AUDIT_ACTOR = "anonymous"
+ISTANBUL = ZoneInfo("Europe/Istanbul")
 AssetSortField = Literal["name", "type", "expires_at", "status"]
 SortDirection = Literal["asc", "desc"]
 AUDIT_FIELDS = (
@@ -575,6 +578,82 @@ def update_asset(  # noqa: B008
         diff["notes"] = {"changed": True}
     if diff:
         record_asset_audit(db, "update", asset, diff)
+    db.commit()
+    db.refresh(asset)
+    return asset
+
+
+@router.post("/{asset_id}/renew", response_model=AssetRead)
+def renew_asset(  # noqa: B008
+    asset_id: int,
+    payload: AssetRenewalRequest,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> Asset:
+    asset = get_asset(asset_id, db)
+    today = datetime.now(ISTANBUL).date()
+    if asset.status == "cancelled":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Cancelled assets cannot be renewed"
+        )
+    if asset.expires_at is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Asset has no current expiry date"
+        )
+    if payload.expires_at <= today or payload.expires_at <= asset.expires_at:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Renewal expiry must be in the future and after the current expiry",
+        )
+    if asset.starts_at and payload.expires_at < asset.starts_at:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="expires_at must be on or after starts_at",
+        )
+
+    previous_expiry = asset.expires_at
+    previous_status = asset.status
+    asset.expires_at = payload.expires_at
+    asset.status = "active"
+    record_asset_audit(
+        db,
+        "update",
+        asset,
+        {
+            "expires_at": {"old": str(previous_expiry), "new": str(asset.expires_at)},
+            **(
+                {"status": {"old": previous_status, "new": asset.status}}
+                if previous_status != asset.status
+                else {}
+            ),
+        },
+    )
+
+    pending_notifications = list(
+        db.scalars(
+            select(Notification).where(
+                Notification.asset_id == asset.id,
+                Notification.status == "pending",
+            )
+        ).all()
+    )
+    for notification in pending_notifications:
+        notification.status = "renewed"
+        db.add(
+            AuditLog(
+                actor=AUDIT_ACTOR,
+                action="update",
+                entity="notification",
+                entity_id=notification.id,
+                diff={
+                    "status": {
+                        "old": "pending",
+                        "new": "renewed",
+                        "expires_at": str(notification.expires_at),
+                    }
+                },
+            )
+        )
+
     db.commit()
     db.refresh(asset)
     return asset

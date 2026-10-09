@@ -253,6 +253,12 @@ class NotificationSnoozeRequest(BaseModel):
     days: Literal[1, 3, 7]
 
 
+class AssetRenewalRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expires_at: date
+
+
 class NotificationEvaluation(BaseModel):
     evaluated_on: date
     created_count: int

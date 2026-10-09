@@ -3,6 +3,7 @@ const labels = { domain: "Domain", hosting: "Hosting", vds: "VDS", license: "Lis
 const statusLabels = { active: "Aktif", expired: "Süresi geçti", cancelled: "İptal" };
 const auditActionLabels = { create: "Oluşturuldu", update: "Güncellendi", delete: "Silindi" };
 const auditEntityLabels = { asset: "Varlık", vendor: "Sağlayıcı", notification: "Bildirim" };
+const notificationStatusLabels = { pending: "Gönderim bekliyor", renewed: "Yenilendi", sent: "Gönderildi" };
 const auditFieldLabels = {
   type: "tür", name: "ad", vendor: "sağlayıcı", vendor_id: "sağlayıcı", owner: "sorumlu",
   cost: "maliyet", currency: "para birimi", cost_period: "maliyet periyodu",
@@ -19,6 +20,7 @@ const auditFieldLabels = {
 const $ = (selector) => document.querySelector(selector);
 let editingAssetId = null;
 let editingVendorId = null;
+let renewingAssetId = null;
 let availableTags = [];
 let availableVendors = [];
 let availableContacts = [];
@@ -133,12 +135,12 @@ function renderNotifications(entries) {
   $("#notification-rows").innerHTML = entries.length ? entries.map((entry) => {
     const snoozedUntil = entry.snoozed_until ? Date.parse(entry.snoozed_until) : 0;
     const statusText = entry.status !== "pending"
-      ? entry.status
+      ? notificationStatusLabels[entry.status] || entry.status
       : snoozedUntil > Date.now()
         ? `Ertelendi: ${new Date(snoozedUntil).toLocaleString("tr-TR")}`
         : "Gönderim bekliyor";
-    const snoozeActions = entry.status === "pending"
-      ? [1, 3, 7].map((days) => `<button class="table-action" data-snooze-notification="${entry.id}" data-snooze-days="${days}" type="button" aria-label="${days} gün ertele">+${days} gün</button>`).join("")
+    const actions = entry.status === "pending"
+      ? `<button class="table-action" data-renew-asset="${entry.asset_id}" type="button">Yenilendi</button>${[1, 3, 7].map((days) => `<button class="table-action" data-snooze-notification="${entry.id}" data-snooze-days="${days}" type="button" aria-label="${days} gün ertele">+${days} gün</button>`).join("")}`
       : "—";
     return `<tr>
       <td>${escapeHtml(new Date(entry.created_at).toLocaleString("tr-TR"))}</td>
@@ -146,7 +148,7 @@ function renderNotifications(entries) {
       <td>${entry.rule === "expired" ? "Süresi doldu" : `${escapeHtml(entry.rule.slice(5))} gün kaldı`}</td>
       <td>${escapeHtml(statusText)}</td>
       <td>${escapeHtml(entry.channel || "Kanal seçilmedi")}</td>
-      <td><div class="table-actions">${snoozeActions}</div></td>
+      <td><div class="table-actions">${actions}</div></td>
     </tr>`;
   }).join("") : '<tr><td class="empty-state" colspan="6">Henüz uyarı kuyruğu boş.</td></tr>';
 }
@@ -329,6 +331,18 @@ $("#evaluate-notifications").addEventListener("click", async () => {
   } catch (error) { showError("Yenileme uyarıları değerlendirilemedi."); }
 });
 $("#notification-rows").addEventListener("click", async (event) => {
+  const renewButton = event.target.closest("[data-renew-asset]");
+  if (renewButton) {
+    renewingAssetId = Number(renewButton.dataset.renewAsset);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+    $("#renewal-expiry").min = tomorrow.toISOString().slice(0, 10);
+    $("#renewal-expiry").value = "";
+    $("#renewal-asset-name").textContent = `Varlık #${renewingAssetId} için yeni bitiş tarihini girin.`;
+    $("#renewal-dialog").showModal();
+    return;
+  }
   const button = event.target.closest("[data-snooze-notification]");
   if (!button) return;
   const days = Number(button.dataset.snoozeDays);
@@ -340,6 +354,26 @@ $("#notification-rows").addEventListener("click", async (event) => {
     $("#notification-result").textContent = `Uyarı ${days} gün ertelendi.`;
     await loadDashboard();
   } catch (error) { showError("Yenileme uyarısı ertelenemedi."); }
+});
+$("#renewal-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (renewingAssetId === null) return;
+  try {
+    await request(`/api/assets/${renewingAssetId}/renew`, {
+      method: "POST",
+      body: JSON.stringify({ expires_at: $("#renewal-expiry").value }),
+    });
+    $("#renewal-dialog").close();
+    $("#notification-result").textContent = "Varlık yenilendi; eski uyarılar kapatıldı ve yeni uyarı döngüsü başladı.";
+    renewingAssetId = null;
+    await loadDashboard();
+  } catch (error) { showError("Varlık yenilenemedi. Sürenin uzatılabilir olduğunu ve yeni bitiş tarihini kontrol edin."); }
+});
+document.querySelectorAll("[data-cancel-renewal]").forEach((button) => {
+  button.addEventListener("click", () => {
+    $("#renewal-dialog").close();
+    renewingAssetId = null;
+  });
 });
 $("#vendor-form").addEventListener("submit", async (event) => {
   event.preventDefault();

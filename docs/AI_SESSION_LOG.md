@@ -1,5 +1,15 @@
 # AI Oturum Geliştirme Günlüğü
 
+## 2026-10-09 16:55 Europe/Istanbul — Copilot — M2 “Yenilendi” akışı
+
+- **Dal / commit:** `ai/codex/m0-complete`; uygulama ve bu kayıt commit/push edilecek.
+- **Yapılanlar:** Asset yenileme API'si yeni bitiş tarihini doğrular, expired varlığı active yapar ve varlığın bekleyen eski uyarılarını `renewed` durumuyla kapatır. Asset expiry/status ve her kapatılan notification için audit kaydı oluşturulur. Ayarlar ekranındaki bildirim satırına “Yenilendi” eylemi ve yeni tarih isteyen modal eklendi; başarılı akış sayfayı tazeler. Plan M2 maddesi güncellendi. E-posta gönderimi eklenmedi; bildirim kanalı seçimi bekleniyor.
+- **Değişen dosyalar:** [api.py](../backend/app/api.py), [schemas.py](../backend/app/schemas.py), [test_main.py](../backend/tests/test_main.py), [app.js](../frontend/app.js), [index.html](../frontend/index.html), [PLAN.md](./PLAN.md), [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** Backend testleri 19/19 geçti. Ruff check/format, mypy, Pylance diagnostics, `node --check`, `git diff --check` geçti. Compose backend/frontend build ve startup başarılı; `/health` `ok`. Tarayıcı mock API ile buton/modal, tarih minimumu, `/api/assets/7002/renew` POST gövdesi ve başarı mesajı doğrulandı; kapat/vazgeç modalı kapatıyor ve istek yollamıyor. Gerçek veritabanına test yazımı yapılmadı. Python 3.14/FastAPI/Starlette kaynaklı deprecation uyarıları görüldü.
+- **Yarım kalanlar / bilinen sorunlar:** Değişiklikler henüz commit/push edilmedi. SMTP e-posta/digest, kullanıcı kanal kararı beklenene kadar kapalı. UI mock testi gerçek API'ye yazım yapmadı; API davranışı backend pytest kapsamındadır.
+- **Sonraki plan:** 1) Değişiklikleri commit/push edip uzak dalı doğrula. 2) Bildirim kanal kararı geldikten sonra dış gönderimi uygula. 3) M3 checklist şablonlarına başla.
+- **Kullanıcıdan beklenen:** SMTP/e-posta, Teams veya Telegram tercihi.
+
 ## 2026-10-09 16:39 Europe/Istanbul — Copilot — Responsive teslim kaydı düzeltmesi
 
 - **Dal / commit:** `ai/codex/m0-complete`; responsive arayüz `5b9b845`, durum/günlük kaydı `c3ea5bf` commit'leriyle push edildi.

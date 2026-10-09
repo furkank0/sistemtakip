@@ -117,9 +117,9 @@ Her milestone için **Bitti Tanımı (DoD):** kod + test + migration + doküman 
 - [x] Tekilleştirme: aynı varlık+eşik için tekrar gönderim yok (`notifications` tablosu)
 - [x] Kuyruktaki bekleyen uyarıyı 1, 3 veya 7 gün ertele; bitiş zamanını kaydet ve audit'e yaz
 - [ ] SMTP e-posta gönderimi + günlük özet (digest) e-postası
-- [ ] "Yenilendi" aksiyonu: yeni bitiş tarihini girer ve uyarı sayacını sıfırlar
+- [x] "Yenilendi" aksiyonu: yeni bitiş tarihini girer, bekleyen eski dönem uyarılarını kapatır ve yeni uyarı döngüsü başlatır
 - [x] Test modu (gerçek e-posta göndermeden önizleme)
-- **Durum:** Kısmen tamamlandı; değerlendirme, kuyruk ve 1/3/7 günlük erteleme çalışıyor. Kullanıcı kanal kararını ertelediği için dışarı gönderim kapalı; "Yenilendi" akışı eksik.
+- **Durum:** Değerlendirme, kuyruk, 1/3/7 günlük erteleme ve "Yenilendi" akışı hazır. Kullanıcı kanal kararını ertelediği için SMTP e-posta/digest gönderimi kapalı.
 - **DoD:** Zaman mock'lanarak yazılmış testlerle eşikler doğru tetiklenir ve tekrarlanmaz.
 
 ### M3 — Günlük Rutin Kontrol Checklist'leri
