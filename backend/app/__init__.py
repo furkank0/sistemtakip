@@ -1,0 +1,1 @@
+"""sistemtakip backend application."""
