@@ -2,6 +2,15 @@
 
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
+## 2026-10-09 — Codex — CSV dışa aktarım
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** `GET /api/assets/export.csv` endpoint'i eklendi. `type` ve `status` filtrelerini destekliyor, tüm varlık alanlarını UTF-8 BOM'lu CSV olarak indiriyor ve Excel uyumluluğu için ek dosya başlığı gönderiyor. Arayüzde seçili filtrelerle çalışan `CSV indir` düğmesi eklendi.
+- **Doğrulama:** Compose imajları yeniden oluşturuldu; proxy üzerinden filtreli CSV endpoint'i HTTP 200 döndü. Yanıt `Content-Disposition` ile indirilebilir ve UTF-8 BOM içeriyor.
+- **Testler:** Backend testleri 7/7 geçti; Ruff ve frontend `node --check` başarılı.
+- **Yarım kalanlar:** M1'de sağlayıcı/tag modelleri, maliyet özeti ve audit log dilimi kaldı. CSV içe aktarım opsiyonel olduğu için bu adımda eklenmedi.
+- **Sıradaki adımlar:** Sağlayıcı/tag veri modeline ve migration'ına geçmek; varlık filtrelerini sağlayıcı/etiket ile genişletmek; maliyet özeti ve temel audit log dilimini tamamlamak.
+
 ## 2026-10-09 — Codex — Docker Compose doğrulaması
 
 - **Dal:** `ai/codex/m0-complete`

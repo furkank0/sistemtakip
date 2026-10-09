@@ -99,6 +99,39 @@ def test_asset_rejects_invalid_date_range(client: TestClient) -> None:
     assert response.status_code == 422
 
 
+def test_asset_csv_export_supports_filters(client: TestClient) -> None:
+    client.post(
+        "/api/assets",
+        json={
+            "type": "domain",
+            "name": "example.com",
+            "vendor": "Example Registrar",
+            "expires_at": "2027-01-31",
+            "cost": "125.50",
+            "notes": "Yenileme notu",
+        },
+    )
+    client.post(
+        "/api/assets",
+        json={"type": "hosting", "name": "hosting.example", "status": "cancelled"},
+    )
+
+    response = client.get("/api/assets/export.csv", params={"type": "domain"})
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/csv; charset=utf-8"
+    assert "attachment; filename=\"assets-" in response.headers["content-disposition"]
+    assert response.content.startswith(b"\xef\xbb\xbf")
+    csv_body = response.content.decode("utf-8-sig")
+    assert (
+        "id,type,name,vendor,owner,cost,currency,starts_at,expires_at,auto_renew,status,notes"
+        in csv_body
+    )
+    assert "example.com" in csv_body
+    assert "hosting.example" not in csv_body
+    assert "Yenileme notu" in csv_body
+
+
 def test_dashboard_counts_assets_by_status_and_expiry(client: TestClient) -> None:
     today = date.today()
     for name, asset_type, asset_status, expires_at in (

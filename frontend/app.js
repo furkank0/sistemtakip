@@ -70,9 +70,16 @@ async function saveAsset(event) {
   catch (error) { showError("Varlık kaydedilemedi. API ve veritabanı bağlantısını kontrol edin."); }
 }
 
+function exportAssets() {
+  const params = new URLSearchParams();
+  const type = $("#type-filter").value; const status = $("#status-filter").value;
+  if (type) params.set("type", type); if (status) params.set("status", status);
+  window.location.href = `${API_BASE}/api/assets/export.csv?${params}`;
+}
+
 $("#open-create").addEventListener("click", openCreate);
 $("#asset-form").addEventListener("submit", saveAsset); $("#type-filter").addEventListener("change", loadDashboard);
-$("#status-filter").addEventListener("change", loadDashboard); $("#refresh-button").addEventListener("click", loadDashboard);
+$("#status-filter").addEventListener("change", loadDashboard); $("#refresh-button").addEventListener("click", loadDashboard); $("#export-button").addEventListener("click", exportAssets);
 $("#asset-rows").addEventListener("click", (event) => { const editButton = event.target.closest("[data-edit]"); const deleteButton = event.target.closest("[data-delete]"); if (editButton) openEdit(editButton.dataset.edit); if (deleteButton) deleteAsset(deleteButton.dataset.delete); });
 $("#search-input").addEventListener("input", () => { const query = $("#search-input").value.trim().toLocaleLowerCase("tr-TR"); document.querySelectorAll("#asset-rows tr").forEach((row) => { row.hidden = query && !row.textContent.toLocaleLowerCase("tr-TR").includes(query); }); });
 loadDashboard();

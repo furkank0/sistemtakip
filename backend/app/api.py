@@ -1,7 +1,10 @@
+import csv
 from collections import Counter
 from datetime import date, timedelta
+from io import StringIO
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,6 +13,21 @@ from app.models import Asset
 from app.schemas import AssetCreate, AssetList, AssetRead, AssetUpdate, DashboardSummary
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
+
+CSV_HEADERS = (
+    "id",
+    "type",
+    "name",
+    "vendor",
+    "owner",
+    "cost",
+    "currency",
+    "starts_at",
+    "expires_at",
+    "auto_renew",
+    "status",
+    "notes",
+)
 
 
 @router.post("", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
@@ -37,6 +55,47 @@ def list_assets(
     assets = list(db.scalars(query).all())
     return AssetList(
         items=assets[offset : offset + limit], total=len(assets), offset=offset, limit=limit
+    )
+
+
+@router.get("/export.csv", response_class=Response)
+def export_assets_csv(
+    db: Session = Depends(get_db),  # noqa: B008
+    asset_type: str | None = Query(default=None, alias="type"),
+    asset_status: str | None = Query(default=None, alias="status"),
+) -> Response:
+    query = select(Asset).order_by(Asset.expires_at.asc().nullslast(), Asset.name.asc())
+    if asset_type:
+        query = query.where(Asset.type == asset_type)
+    if asset_status:
+        query = query.where(Asset.status == asset_status)
+
+    output = StringIO(newline="")
+    writer = csv.writer(output, lineterminator="\r\n")
+    writer.writerow(CSV_HEADERS)
+    for asset in db.scalars(query):
+        writer.writerow(
+            (
+                asset.id,
+                asset.type,
+                asset.name,
+                asset.vendor or "",
+                asset.owner or "",
+                asset.cost or "",
+                asset.currency,
+                asset.starts_at or "",
+                asset.expires_at or "",
+                asset.auto_renew,
+                asset.status,
+                asset.notes or "",
+            )
+        )
+
+    filename = f"assets-{date.today().isoformat()}.csv"
+    return Response(
+        content=output.getvalue().encode("utf-8-sig"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
