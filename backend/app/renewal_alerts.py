@@ -1,13 +1,13 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, tuple_
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.database import get_db, get_engine
-from app.models import Asset, Notification
-from app.schemas import NotificationEvaluation, NotificationRead
+from app.models import Asset, AuditLog, Notification
+from app.schemas import NotificationEvaluation, NotificationRead, NotificationSnoozeRequest
 
 DEFAULT_REMINDER_DAYS = (60, 30, 14, 7, 1)
 ISTANBUL = ZoneInfo("Europe/Istanbul")
@@ -84,3 +84,38 @@ def evaluate_notifications(
         created_count=len(created),
         notifications=[NotificationRead.model_validate(item) for item in created],
     )
+
+
+@router.post("/{notification_id}/snooze", response_model=NotificationRead)
+def snooze_notification(
+    notification_id: int,
+    payload: NotificationSnoozeRequest,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> Notification:
+    notification = db.get(Notification, notification_id)
+    if notification is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
+    if notification.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Only pending notifications can be snoozed"
+        )
+
+    old_snoozed_until = notification.snoozed_until
+    notification.snoozed_until = datetime.now(ISTANBUL) + timedelta(days=payload.days)
+    db.add(
+        AuditLog(
+            actor="anonymous",
+            action="update",
+            entity="notification",
+            entity_id=notification.id,
+            diff={
+                "snoozed_until": {
+                    "old": old_snoozed_until.isoformat() if old_snoozed_until else None,
+                    "new": notification.snoozed_until.isoformat(),
+                }
+            },
+        )
+    )
+    db.commit()
+    db.refresh(notification)
+    return notification

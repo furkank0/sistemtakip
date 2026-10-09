@@ -109,7 +109,7 @@ Oturumu kapatmadan önce AGENTS.md, docs/STATE.md ve docs/AI_SESSION_LOG.md kura
 
 - [x] **M0** — Repo iskeleti, Docker Compose, CI (lint + test), `.env.example`
 - [x] **M1** — Varlık CRUD (domain/hosting/VDS/lisans), contacts, tür bazlı form alanları ve liste/pano
-- [ ] **M2 (devam ediyor)** — Yenileme uyarı eşikleri ve kuyruk hazır; kanal kararı, e-posta gönderimi ve yenilendi/snooze akışları bekliyor
+- [ ] **M2 (devam ediyor)** — Yenileme eşikleri/kuyruğu ve 1/3/7 günlük snooze hazır; kanal kararı, e-posta gönderimi ve yenilendi akışı bekliyor
 - [ ] **M3** — Günlük checklist şablonları ve çalıştırma kaydı
 - [ ] **M4** — Otomatik kontroller (RDAP, TLS expiry, DNS, HTTP/TCP/ICMP)
 - [ ] **M5** — Kimlik doğrulama (yerel + LDAP/AD), rol modeli, audit log

@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -396,6 +396,50 @@ def test_renewal_notification_evaluation_is_idempotent_and_supports_overrides(
     )
 
     assert client.get("/api/notifications").json()
+
+
+def test_pending_notification_can_be_snoozed_and_audited(client: TestClient) -> None:
+    today = date.today()
+    asset = client.post(
+        "/api/assets",
+        json={
+            "type": "domain",
+            "name": "snooze.example",
+            "expires_at": (today + timedelta(days=7)).isoformat(),
+        },
+    ).json()
+    evaluated = client.post("/api/notifications/evaluate", params={"date": today.isoformat()})
+    assert evaluated.status_code == 200
+    notification = evaluated.json()["notifications"][0]
+
+    snoozed = client.post(
+        f"/api/notifications/{notification['id']}/snooze",
+        json={"days": 3},
+    )
+    assert snoozed.status_code == 200
+    result = snoozed.json()
+    assert result["status"] == "pending"
+    assert result["snoozed_until"] is not None
+    assert date.fromisoformat(result["snoozed_until"][:10]) == today + timedelta(days=3)
+    assert result["asset_id"] == asset["id"]
+
+    audit = client.get("/api/audit-log").json()
+    snooze_audit = next(
+        entry
+        for entry in audit
+        if entry["entity"] == "notification" and entry["entity_id"] == notification["id"]
+    )
+    assert snooze_audit["diff"]["snoozed_until"]["old"] is None
+    audited_until = datetime.fromisoformat(snooze_audit["diff"]["snoozed_until"]["new"])
+    returned_until = datetime.fromisoformat(result["snoozed_until"])
+    assert audited_until.replace(tzinfo=None) == returned_until.replace(tzinfo=None)
+    assert client.get("/api/notifications").json()[0]["snoozed_until"] == result["snoozed_until"]
+
+    assert (
+        client.post(f"/api/notifications/{notification['id']}/snooze", json={"days": 2}).status_code
+        == 422
+    )
+    assert client.post("/api/notifications/999/snooze", json={"days": 1}).status_code == 404
 
 
 def test_asset_crud_is_audited_and_note_values_are_redacted(client: TestClient) -> None:

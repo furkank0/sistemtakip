@@ -1,5 +1,16 @@
 # AI Oturum Geliştirme Günlüğü
 
+## 2026-10-09 16:11 Europe/Istanbul — Copilot — M2 erteleme akışı
+
+- **Dal / başlangıç commit'i:** `ai/codex/m0-complete` / `5a1afc2`; M2 değişikliklerinin commit/push işlemi bekliyor.
+- **Kullanıcı kararı:** Bekleyen uyarılar 1, 3 veya 7 gün ertelenebilir.
+- **Yapılanlar:** Notification model/schema/API ve `0010_notification_snooze` migration'ı eklendi. Snooze endpoint'i yalnızca pending uyarılarda, 1/3/7 gün girdileriyle çalışıyor ve audit log'a kayıt bırakıyor. Ayarlar ekranına seçenekler ve erteleme bitiş durumu eklendi; e-posta gönderimi kapalı tutuldu.
+- **Değişen dosyalar:** [AGENTS.md](../AGENTS.md), [models.py](../backend/app/models.py), [schemas.py](../backend/app/schemas.py), [renewal_alerts.py](../backend/app/renewal_alerts.py), [0010_notification_snooze.py](../backend/alembic/versions/0010_notification_snooze.py), [test_main.py](../backend/tests/test_main.py), [app.js](../frontend/app.js), [index.html](../frontend/index.html), [PLAN.md](./PLAN.md), [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** Backend pytest 17/17; Ruff check/format, mypy, Pylance diagnostics, `node --check` ve `git diff --check` geçti. Compose PostgreSQL Alembic `0010_notification_snooze (head)` ve `/health` `ok`. Tarayıcıda API mock'u ile 1/3/7 gün butonları, `days:3` POST isteği ve erteleme durumu kontrol edildi; Compose veritabanına test uyarısı yazılmadı. Python 3.14 üzerinde Starlette/FastAPI kaynaklı deprecation uyarıları görüldü.
+- **Yarım kalanlar / bilinen sorunlar:** E-posta/digest için SMTP/Teams/Telegram kararı ve varlığı "Yenilendi" olarak güncelleme akışı. Bildirimler kuyruğa ekleniyor, dış sistemlere gönderim yok.
+- **Sonraki plan:** 1) Bu değişiklikleri commit/push et. 2) Kanal ve yenilendi akışı için karar/uygulama. 3) Sonra M3 checklist şablonları.
+- **Kullanıcıdan beklenen:** Bildirim kanalı seçimi.
+
 ## 2026-10-09 15:56 Europe/Istanbul — Copilot — M1 tür alanları commit/push
 
 - **Dal / commit:** `ai/codex/m0-complete`; tür bazlı alanlar `25ba242` (`feat: add type-specific asset fields`) commit'iyle push edildi. M1 contacts/liste önceki commit'leri `c33466a` ve `8ed96c5` de uzak dalda. Bu teslim kaydının güncellemesi docs commit'iyle push ediliyor.

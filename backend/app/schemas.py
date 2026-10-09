@@ -243,7 +243,14 @@ class NotificationRead(BaseModel):
     channel: str | None
     status: str
     created_at: datetime
+    snoozed_until: datetime | None
     sent_at: datetime | None
+
+
+class NotificationSnoozeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    days: Literal[1, 3, 7]
 
 
 class NotificationEvaluation(BaseModel):

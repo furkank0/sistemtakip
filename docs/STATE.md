@@ -1,14 +1,15 @@
 # docs/STATE.md — Canlı Proje Durumu
 
-## 2026-10-09 15:56 — Copilot — M1 tür bazlı alanlar
+## 2026-10-09 16:11 — Copilot — M2 erteleme akışı
 
-- **Git durumu:** `ai/codex/m0-complete`; M1 tür alanları `25ba242` commit'iyle `origin/ai/codex/m0-complete` dalına push edildi. Önceki M1 contacts/liste işleri `c33466a`; bu commit'in teslim kaydı takip eden docs commit'iyle push ediliyor. `.env` commit dışında.
-- **Yapılanlar:** Domain için nameserver ve kayıt kuruluşu etiketi; hosting için paket/yönetim URL'si; VDS için IP/OS/vCPU/RAM/disk; lisans için ürün/koltuk alanları eklendi. API şeması, PostgreSQL modeli, `0009_asset_type_details` migration'ı, audit diff'i, CSV export ve dinamik form birlikte güncellendi. URL içinde kullanıcı bilgisi/query/fragment reddediliyor; lisans anahtarı/parola alanı eklenmedi. Tür değişiminde uyumsuz eski alanlar temizleniyor.
-- **Mevcut konum:** M0 ve M1 tamamlandı (CSV import opsiyonel kapsam dışı). M2 eşik değerlendirme/kuyruk/scheduler hazır; bildirim kanalı ve yenilendi/snooze akışları eksik. M3+ başlamadı.
-- **Çalışma ortamı:** Compose PostgreSQL Alembic `0009_asset_type_details (head)`, `/health` `ok`; dört var olan demo varlık korunuyor ve yeni alanlar null. Arayüzde her tür için yalnızca kendi alan grubu görünür; test amaçlı kayıt eklenmedi.
-- **Doğrulama:** Backend pytest 16/16; Ruff check/format, mypy, `node --check`, Pylance diagnostics ve `git diff --check` başarılı. Testler alan round-trip, tip uyumsuzluğu, IP/koltuk doğrulaması, credential içeren URL reddi, tip geçişinde eski alanların temizlenmesi ve CSV alanlarını kapsıyor. Python 3.14'te Starlette/FastAPI bağımlılıklarından deprecation uyarıları görülüyor.
-- **Sıradaki sıra:** 1) M2 için yenilendi/snooze davranışını belirle. 2) Bildirim kanalı seçimi sonrası gönderim/digest. 3) Sonra M3 checklist şablonlarına geç.
-- **Kullanıcı kararı:** Tür alanları sabit model olarak seçildi; lisans anahtarı/sır tutulmayacak.
+- **Git durumu:** `ai/codex/m0-complete`, temel alınan commit `5a1afc2`; M2 değişiklikleri doğrulandı ancak henüz commit/push edilmedi. `.env` commit dışında.
+- **Kullanıcı kararı:** Bekleyen yenileme uyarıları 1, 3 veya 7 gün ertelenebilir.
+- **Yapılanlar:** Bildirim modeline `snoozed_until` eklendi; `0010_notification_snooze` ileri/geri alınabilir migration'ı oluşturuldu. `POST /api/notifications/{id}/snooze` yalnızca 1/3/7 gün değerlerini kabul ediyor, yalnızca bekleyen uyarıları erteliyor ve değişikliği audit log'a yazıyor. Ayarlar ekranındaki kuyrukta her uyarı için üç erteleme seçeneği ve erteleme bitişi gösteriliyor. E-posta gönderimi yapılmıyor.
+- **Mevcut konum:** M0/M1 tamamlandı. M2 eşik değerlendirme, kuyruk, scheduler ve snooze hazır; e-posta/digest için kanal kararı ve "Yenilendi" akışı bekliyor. M3+ başlamadı.
+- **Çalışma ortamı:** Compose PostgreSQL migration head `0010_notification_snooze`; `/health` `ok`; servisler çalışıyor. Veritabanına test uyarısı eklenmedi.
+- **Doğrulama:** Backend pytest 17/17; Ruff check/format, mypy, Pylance diagnostics, `node --check` ve `git diff --check` başarılı. UI tarayıcıda API mock'u ile 1/3/7 seçenekleri, `days:3` isteği ve ertelendi görünümü doğrulandı; kalıcı veri yazılmadı. Python 3.14'te FastAPI/Starlette kaynaklı deprecation uyarıları sürüyor.
+- **Sıradaki sıra:** 1) Bu değişiklikleri commit/push et. 2) Kullanıcı kararından sonra "Yenilendi" akışını ve e-posta kanalını tamamla. 3) M2 kapanınca M3 checklist şablonlarına geç.
+- **Kullanıcıdan beklenen:** Bildirim kanalı seçimi; e-posta gönderimi kanal kararı olmadan kapalı kalacak.
 
 ## 2026-10-09 14:57 — Copilot — M1 commit ve push
 
@@ -169,6 +170,7 @@ Proje başlangıç aşamasında. Teknoloji yığını kullanıcı adına değerl
 | 2026-10-08 | M0 ve ilk sürüm için FastAPI + PostgreSQL + HTMX yığını seçildi | İç araçta sunucu tarafı HTML akışı, Next.js'e göre daha az frontend bakım yükü sunuyor | Codex (kullanıcının karar verme yetkisi vermesiyle) |
 | 2026-10-09 | Maliyet periyodu aylık/yıllık/tek seferlik/belirtilmemiş olarak tutulacak; eski kayıtlar belirtilmemiş kalacak ve farklı para birimleri ayrı gösterilecek | Kur dönüşümü veya eski kayıtların periyodu tahmin edilmeyecek | Kullanıcı |
 | 2026-10-09 | Bildirim kanalı seçimi ve dışa gönderim şimdilik ertelendi; uyarılar yalnızca veritabanı kuyruğunda birikir | SMTP/Teams/Telegram kararı verilene kadar dış sistemlere mesaj gitmemesi | Kullanıcı |
+| 2026-10-09 | Bekleyen yenileme uyarıları 1, 3 veya 7 gün ertelenebilir | Kullanıcı kuyruk satırından hızlı erteleme seçeneği istedi | Kullanıcı |
 
 ## Bağımlılık Gerekçeleri
 - `fastapi`, `sqlalchemy`, `alembic`, `psycopg`, `pydantic-settings`: API, ORM/migration, PostgreSQL bağlantısı ve ortam yapılandırması için.

@@ -6,7 +6,7 @@ const auditFieldLabels = {
   type: "tür", name: "ad", vendor: "sağlayıcı", vendor_id: "sağlayıcı", owner: "sorumlu",
   cost: "maliyet", currency: "para birimi", cost_period: "maliyet periyodu",
   starts_at: "başlangıç tarihi", expires_at: "bitiş tarihi", auto_renew: "otomatik yenileme",
-  reminder_days: "hatırlatma günleri",
+  reminder_days: "hatırlatma günleri", snoozed_until: "erteleme bitişi",
   status: "durum", tag_ids: "etiketler", contact_ids: "irtibat kişileri",
   notes: "not içeriği (değer saklanmaz)",
 };
@@ -100,18 +100,29 @@ function renderAuditLog(entries) {
       <td>${escapeHtml(details)}</td>
       <td>${escapeHtml(entry.actor)}</td>
     </tr>`;
-  }).join("") : '<tr><td class="empty-state" colspan="5">Henüz varlık değişikliği kaydı yok.</td></tr>';
+  }).join("") : '<tr><td class="empty-state" colspan="5">Henüz değişiklik kaydı yok.</td></tr>';
 }
 
 function renderNotifications(entries) {
-  $("#notification-rows").innerHTML = entries.length ? entries.map((entry) => `
-    <tr>
+  $("#notification-rows").innerHTML = entries.length ? entries.map((entry) => {
+    const snoozedUntil = entry.snoozed_until ? Date.parse(entry.snoozed_until) : 0;
+    const statusText = entry.status !== "pending"
+      ? entry.status
+      : snoozedUntil > Date.now()
+        ? `Ertelendi: ${new Date(snoozedUntil).toLocaleString("tr-TR")}`
+        : "Gönderim bekliyor";
+    const snoozeActions = entry.status === "pending"
+      ? [1, 3, 7].map((days) => `<button class="table-action" data-snooze-notification="${entry.id}" data-snooze-days="${days}" type="button" aria-label="${days} gün ertele">+${days} gün</button>`).join("")
+      : "—";
+    return `<tr>
       <td>${escapeHtml(new Date(entry.created_at).toLocaleString("tr-TR"))}</td>
       <td>Varlık #${entry.asset_id}</td>
       <td>${entry.rule === "expired" ? "Süresi doldu" : `${escapeHtml(entry.rule.slice(5))} gün kaldı`}</td>
-      <td>${escapeHtml(entry.status === "pending" ? "Gönderim bekliyor" : entry.status)}</td>
+      <td>${escapeHtml(statusText)}</td>
       <td>${escapeHtml(entry.channel || "Kanal seçilmedi")}</td>
-    </tr>`).join("") : '<tr><td class="empty-state" colspan="5">Henüz uyarı kuyruğu boş.</td></tr>';
+      <td><div class="table-actions">${snoozeActions}</div></td>
+    </tr>`;
+  }).join("") : '<tr><td class="empty-state" colspan="6">Henüz uyarı kuyruğu boş.</td></tr>';
 }
 
 function renderContactOptions() {
@@ -290,6 +301,19 @@ $("#evaluate-notifications").addEventListener("click", async () => {
     $("#notification-result").textContent = `${result.created_count} yeni uyarı kuyruğa eklendi; e-posta gönderilmedi.`;
     await loadDashboard();
   } catch (error) { showError("Yenileme uyarıları değerlendirilemedi."); }
+});
+$("#notification-rows").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-snooze-notification]");
+  if (!button) return;
+  const days = Number(button.dataset.snoozeDays);
+  try {
+    await request(`/api/notifications/${button.dataset.snoozeNotification}/snooze`, {
+      method: "POST",
+      body: JSON.stringify({ days }),
+    });
+    $("#notification-result").textContent = `Uyarı ${days} gün ertelendi.`;
+    await loadDashboard();
+  } catch (error) { showError("Yenileme uyarısı ertelenemedi."); }
 });
 $("#create-vendor").addEventListener("click", async () => {
   const name = $("#vendor-name").value.trim(); if (!name) return;
