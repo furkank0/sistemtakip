@@ -1,12 +1,20 @@
+import ipaddress
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 AssetType = Literal["domain", "hosting", "vds", "license"]
 AssetStatus = Literal["active", "expired", "cancelled"]
 CostPeriod = Literal["monthly", "yearly", "one_time", "unspecified"]
+TYPE_SPECIFIC_FIELDS: dict[str, frozenset[str]] = {
+    "domain": frozenset({"nameservers"}),
+    "hosting": frozenset({"hosting_plan", "management_url"}),
+    "vds": frozenset({"ip_address", "operating_system", "vcpu_count", "memory_gb", "storage_gb"}),
+    "license": frozenset({"product_name", "seat_count"}),
+}
 
 
 def normalize_currency(value: object) -> object:
@@ -19,6 +27,64 @@ def validate_reminder_day_list(value: list[int] | None) -> list[int] | None:
     if value is not None and (any(days <= 0 for days in value) or len(set(value)) != len(value)):
         raise ValueError("reminder_days must contain unique positive day counts")
     return value
+
+
+def invalid_asset_type_fields(asset_type: str, values: dict[str, object]) -> list[str]:
+    allowed_fields = TYPE_SPECIFIC_FIELDS.get(asset_type, frozenset())
+    all_fields = set().union(*TYPE_SPECIFIC_FIELDS.values())
+    return [
+        field
+        for field in all_fields
+        if field not in allowed_fields and values.get(field) is not None
+    ]
+
+
+def normalize_nameservers(value: list[str] | None) -> list[str] | None:
+    if value is None:
+        return None
+    nameservers = [server.strip() for server in value]
+    if any(
+        not server or len(server) > 253 or any(char.isspace() for char in server)
+        for server in nameservers
+    ):
+        raise ValueError("nameservers must be non-blank hostnames")
+    return nameservers
+
+
+def normalize_optional_asset_text(value: str | None) -> str | None:
+    cleaned = value.strip() if value is not None else None
+    return cleaned or None
+
+
+def validate_management_url(value: str | None) -> str | None:
+    cleaned = normalize_optional_asset_text(value)
+    if not cleaned:
+        return None
+    parsed = urlsplit(cleaned)
+    try:
+        _ = parsed.port
+    except ValueError as error:
+        raise ValueError("management_url must be a valid HTTP(S) URL") from error
+    if (
+        parsed.scheme not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ValueError("management_url must be a credential-free HTTP(S) URL")
+    return cleaned
+
+
+def normalize_ip_address(value: str | None) -> str | None:
+    cleaned = normalize_optional_asset_text(value)
+    if not cleaned:
+        return None
+    try:
+        return str(ipaddress.ip_address(cleaned))
+    except ValueError as error:
+        raise ValueError("ip_address must be a valid IPv4 or IPv6 address") from error
 
 
 class AssetBase(BaseModel):
@@ -34,6 +100,16 @@ class AssetBase(BaseModel):
     auto_renew: bool = False
     status: AssetStatus = "active"
     reminder_days: list[int] | None = None
+    nameservers: list[str] | None = None
+    hosting_plan: str | None = Field(default=None, max_length=255)
+    management_url: str | None = Field(default=None, max_length=500)
+    ip_address: str | None = Field(default=None, max_length=45)
+    operating_system: str | None = Field(default=None, max_length=120)
+    vcpu_count: int | None = Field(default=None, ge=1, le=1024)
+    memory_gb: int | None = Field(default=None, ge=1, le=1048576)
+    storage_gb: int | None = Field(default=None, ge=1, le=1048576)
+    product_name: str | None = Field(default=None, max_length=255)
+    seat_count: int | None = Field(default=None, ge=1, le=1000000)
     notes: str | None = None
 
     @field_validator("reminder_days")
@@ -46,10 +122,33 @@ class AssetBase(BaseModel):
     def normalize_currency_code(cls, value: object) -> object:
         return normalize_currency(value)
 
+    @field_validator("nameservers")
+    @classmethod
+    def normalize_nameservers(cls, value: list[str] | None) -> list[str] | None:
+        return normalize_nameservers(value)
+
+    @field_validator("hosting_plan", "operating_system", "product_name")
+    @classmethod
+    def normalize_optional_text(cls, value: str | None) -> str | None:
+        return normalize_optional_asset_text(value)
+
+    @field_validator("management_url")
+    @classmethod
+    def validate_management_url(cls, value: str | None) -> str | None:
+        return validate_management_url(value)
+
+    @field_validator("ip_address")
+    @classmethod
+    def validate_ip_address(cls, value: str | None) -> str | None:
+        return normalize_ip_address(value)
+
     @model_validator(mode="after")
-    def validate_date_range(self) -> "AssetBase":
+    def validate_asset(self) -> "AssetBase":
         if self.starts_at and self.expires_at and self.expires_at < self.starts_at:
             raise ValueError("expires_at must be on or after starts_at")
+        invalid_fields = invalid_asset_type_fields(self.type, self.model_dump())
+        if invalid_fields:
+            raise ValueError(f"fields not supported for {self.type}: {', '.join(invalid_fields)}")
         return self
 
 
@@ -74,6 +173,16 @@ class AssetUpdate(BaseModel):
     auto_renew: bool | None = None
     status: AssetStatus | None = None
     reminder_days: list[int] | None = None
+    nameservers: list[str] | None = None
+    hosting_plan: str | None = Field(default=None, max_length=255)
+    management_url: str | None = Field(default=None, max_length=500)
+    ip_address: str | None = Field(default=None, max_length=45)
+    operating_system: str | None = Field(default=None, max_length=120)
+    vcpu_count: int | None = Field(default=None, ge=1, le=1024)
+    memory_gb: int | None = Field(default=None, ge=1, le=1048576)
+    storage_gb: int | None = Field(default=None, ge=1, le=1048576)
+    product_name: str | None = Field(default=None, max_length=255)
+    seat_count: int | None = Field(default=None, ge=1, le=1000000)
     notes: str | None = None
     tag_ids: list[int] | None = None
     contact_ids: list[int] | None = None
@@ -88,6 +197,33 @@ class AssetUpdate(BaseModel):
     @classmethod
     def normalize_currency_code(cls, value: object) -> object:
         return normalize_currency(value)
+
+    @field_validator("type")
+    @classmethod
+    def require_type_when_provided(cls, value: AssetType | None) -> AssetType:
+        if value is None:
+            raise ValueError("type cannot be null")
+        return value
+
+    @field_validator("nameservers")
+    @classmethod
+    def normalize_nameservers(cls, value: list[str] | None) -> list[str] | None:
+        return normalize_nameservers(value)
+
+    @field_validator("hosting_plan", "operating_system", "product_name")
+    @classmethod
+    def normalize_optional_text(cls, value: str | None) -> str | None:
+        return normalize_optional_asset_text(value)
+
+    @field_validator("management_url")
+    @classmethod
+    def validate_management_url(cls, value: str | None) -> str | None:
+        return validate_management_url(value)
+
+    @field_validator("ip_address")
+    @classmethod
+    def validate_ip_address(cls, value: str | None) -> str | None:
+        return normalize_ip_address(value)
 
     @field_validator("cost_period")
     @classmethod

@@ -84,7 +84,7 @@ sistemtakip/
 | `tags`, `asset_tags` | Gruplama (site, departman, proje) |
 | `contacts` | Varlık sorumluları ve bildirim alıcıları |
 
-Varlık türüne özgü alanlar: `domain` (registrar, nameserver'lar, auto_renew), `vds` (IP, OS, sağlayıcı paneli, kaynak planı), `hosting` (paket, panel, ilişkili domainler), `license` (ürün, adet/koltuk, lisans türü, sürüm). Lisans anahtarı alanı v1'de **yoktur**; yalnızca `vault_ref`.
+Uygulanan tür alanları: `domain` (registrar, nameserver'lar), `hosting` (paket, yönetim URL'si), `vds` (IP, işletim sistemi, vCPU/RAM/disk), `license` (ürün, koltuk sayısı). Tür alanları isteğe bağlıdır; tür değiştirilince eski türe ait alanlar temizlenir. Lisans anahtarı ve erişim bilgileri tutulmaz; yalnızca güvenli bir `vault_ref` yaklaşımı sonraki karar olarak kalır.
 
 ## 6. Yol Haritası
 
@@ -103,12 +103,12 @@ Her milestone için **Bitti Tanımı (DoD):** kod + test + migration + doküman 
 - [x] `assets`, `vendors`, `tags`, `contacts` modelleri ve migration'ları
 - [x] CRUD API + validasyon (tarih tutarlılığı, zorunlu alanlar)
 - [x] Liste ekranı: arama, filtre (tür, sağlayıcı, etiket, durum), sıralama, sayfalama
-- [ ] Detay/düzenleme formu (türe göre dinamik alanlar) — ortak form hazır; türe özel alanlar eksik
+- [x] Detay/düzenleme formu (türe göre dinamik alanlar)
 - [x] Pano: 30/60/90 gün içinde bitenler, süresi dolanlar, türe göre sayılar, aylık/yıllık maliyet özeti
 - [x] CSV dışa aktarım
 - [ ] CSV içe aktarım (opsiyonel, şablonlu; yapılmadı)
 - [x] Temel audit log (oluşturma/güncelleme/silme)
-- **Durum:** Kısmen tamamlandı; contacts yönetimi ve liste arama/filtre/sıralama/sayfalama hazır. M1'i kapatmak için varlık türüne özel form alanları ve opsiyonel CSV içe aktarma kararı kalıyor.
+- **Durum:** Tamamlandı. CSV içe aktarma opsiyonel olup bu milestone kapsamına alınmadı.
 - **DoD:** Kullanıcı dört varlık türünü ekleyip düzenleyebilir; pano doğru hesaplar; API testleri geçer.
 
 ### M2 — Yenileme Uyarı Motoru

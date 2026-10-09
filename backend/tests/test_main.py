@@ -139,6 +139,130 @@ def test_asset_list_search_sort_and_pagination(client: TestClient) -> None:
     assert client.get("/api/assets", params={"sort_direction": "sideways"}).status_code == 422
 
 
+def test_asset_type_specific_fields_validate_and_round_trip(client: TestClient) -> None:
+    domain = client.post(
+        "/api/assets",
+        json={
+            "type": "domain",
+            "name": "example.test",
+            "nameservers": [" ns1.example.test ", "ns2.example.test"],
+        },
+    )
+    assert domain.status_code == 201
+    assert domain.json()["nameservers"] == ["ns1.example.test", "ns2.example.test"]
+
+    hosting = client.post(
+        "/api/assets",
+        json={
+            "type": "hosting",
+            "name": "shared-hosting",
+            "hosting_plan": " Gold ",
+            "management_url": " https://panel.example.test ",
+        },
+    )
+    assert hosting.status_code == 201
+    hosting_id = hosting.json()["id"]
+    assert hosting.json()["hosting_plan"] == "Gold"
+    assert hosting.json()["management_url"] == "https://panel.example.test"
+
+    vds = client.post(
+        "/api/assets",
+        json={
+            "type": "vds",
+            "name": "vds-01",
+            "ip_address": "2001:0db8::1",
+            "operating_system": "Ubuntu 24.04 LTS",
+            "vcpu_count": 8,
+            "memory_gb": 32,
+            "storage_gb": 500,
+        },
+    )
+    assert vds.status_code == 201
+    assert vds.json()["ip_address"] == "2001:db8::1"
+    assert vds.json()["memory_gb"] == 32
+
+    license_asset = client.post(
+        "/api/assets",
+        json={
+            "type": "license",
+            "name": "office-suite",
+            "product_name": "Office Suite",
+            "seat_count": 25,
+        },
+    )
+    assert license_asset.status_code == 201
+    assert license_asset.json()["product_name"] == "Office Suite"
+    assert license_asset.json()["seat_count"] == 25
+
+    changed_type = client.patch(
+        f"/api/assets/{domain.json()['id']}",
+        json={
+            "type": "hosting",
+            "hosting_plan": "Starter",
+            "management_url": "https://control.example.test",
+        },
+    )
+    assert changed_type.status_code == 200
+    assert changed_type.json()["nameservers"] is None
+    assert changed_type.json()["hosting_plan"] == "Starter"
+    update_audit = client.get("/api/audit-log", params={"limit": 20}).json()
+    type_change = next(
+        entry
+        for entry in update_audit
+        if entry["action"] == "update" and entry["entity_id"] == domain.json()["id"]
+    )
+    assert type_change["diff"]["nameservers"]["new"] is None
+    assert type_change["diff"]["hosting_plan"]["new"] == "Starter"
+
+    assert (
+        client.patch(f"/api/assets/{hosting_id}", json={"ip_address": "192.0.2.10"}).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/api/assets",
+            json={"type": "domain", "name": "bad.example", "hosting_plan": "not-domain"},
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/api/assets",
+            json={
+                "type": "hosting",
+                "name": "query-url",
+                "management_url": "https://panel.example.test/?ref=demo",
+            },
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/api/assets",
+            json={"type": "vds", "name": "bad-ip", "ip_address": "not-an-ip"},
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/api/assets",
+            json={
+                "type": "hosting",
+                "name": "unsafe-url",
+                "management_url": "https://demo-user@panel.example.test",
+            },
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/api/assets",
+            json={"type": "license", "name": "bad-count", "seat_count": 0},
+        ).status_code
+        == 422
+    )
+
+
 def test_contacts_can_be_managed_and_assigned_to_assets(client: TestClient) -> None:
     contact = client.post(
         "/api/contacts",
@@ -347,6 +471,7 @@ def test_asset_csv_export_supports_filters(client: TestClient) -> None:
             "expires_at": "2027-01-31",
             "cost": "125.50",
             "cost_period": "yearly",
+            "nameservers": ["ns1.example.com"],
             "notes": "Yenileme notu",
             "contact_ids": [contact.json()["id"]],
         },
@@ -365,12 +490,15 @@ def test_asset_csv_export_supports_filters(client: TestClient) -> None:
     csv_body = response.content.decode("utf-8-sig")
     assert (
         "id,type,name,vendor,owner,cost,currency,cost_period,starts_at,expires_at,"
-        "auto_renew,status,reminder_days,notes,tags,contacts" in csv_body
+        "auto_renew,status,reminder_days,nameservers,hosting_plan,management_url,"
+        "ip_address,operating_system,vcpu_count,memory_gb,storage_gb,product_name,"
+        "seat_count,notes,tags,contacts" in csv_body
     )
     assert "example.com" in csv_body
     assert "hosting.example" not in csv_body
     assert "125.50,TRY,yearly,,2027-01-31" in csv_body
     assert "Yenileme notu" in csv_body
+    assert "ns1.example.com" in csv_body
     assert "CSV Contact" in csv_body
 
 

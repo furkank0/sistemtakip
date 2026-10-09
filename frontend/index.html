@@ -99,7 +99,7 @@
         <div class="form-grid">
           <label>Ad / hostname<input name="name" required maxlength="255" placeholder="example.com"></label>
           <label>Tür<select name="type" required><option value="domain">Domain</option><option value="hosting">Hosting</option><option value="vds">VDS</option><option value="license">Lisans</option></select></label>
-          <label>Sağlayıcı<select name="vendor_id" id="asset-vendor"><option value="">Sağlayıcı seçin</option></select></label>
+          <label><span id="vendor-label">Sağlayıcı</span><select name="vendor_id" id="asset-vendor"><option value="">Sağlayıcı seçin</option></select></label>
           <label>Sorumlu<input name="owner" maxlength="255" placeholder="Ekip veya kişi"></label>
           <label>İrtibat kişileri<select name="contact_ids" id="asset-contacts" multiple size="3"></select></label>
           <label>Etiketler<select name="tag_ids" id="asset-tags" multiple size="3"></select></label>
@@ -108,6 +108,24 @@
           <label>Para birimi<input name="currency" type="text" value="TRY" maxlength="3" pattern="[A-Za-z]{3}" title="Üç harfli para birimi kodu" required></label>
           <label>Maliyet periyodu<select name="cost_period"><option value="unspecified">Belirtilmemiş</option><option value="monthly">Aylık</option><option value="yearly">Yıllık</option><option value="one_time">Tek seferlik</option></select></label>
           <label>Özel hatırlatma günleri<input name="reminder_days" placeholder="Varsayılan: 60, 30, 14, 7, 1"><small>Virgülle ayırın; boş değer varsayılanı, "yok" yalnızca süre dolum uyarısını kullanır.</small></label>
+        </div>
+        <div class="form-grid type-fields" data-type-fields="domain" hidden>
+          <label class="full-field">Nameserver listesi<input name="nameservers" maxlength="1000" placeholder="ns1.example.net, ns2.example.net"></label>
+        </div>
+        <div class="form-grid type-fields" data-type-fields="hosting" hidden>
+          <label>Hosting planı<input name="hosting_plan" maxlength="255" placeholder="Paylaşımlı hosting"></label>
+          <label>Yönetim paneli URL'si<input name="management_url" type="url" maxlength="500" placeholder="https://panel.example.com"></label>
+        </div>
+        <div class="form-grid type-fields" data-type-fields="vds" hidden>
+          <label>IP adresi<input name="ip_address" maxlength="45" placeholder="192.0.2.10 veya IPv6"></label>
+          <label>İşletim sistemi<input name="operating_system" maxlength="120" placeholder="Ubuntu 24.04 LTS"></label>
+          <label>vCPU sayısı<input name="vcpu_count" type="number" min="1" max="1024" step="1"></label>
+          <label>Bellek (GB)<input name="memory_gb" type="number" min="1" max="1048576" step="1"></label>
+          <label>Disk (GB)<input name="storage_gb" type="number" min="1" max="1048576" step="1"></label>
+        </div>
+        <div class="form-grid type-fields" data-type-fields="license" hidden>
+          <label>Ürün adı<input name="product_name" maxlength="255" placeholder="Ürün veya lisans paketi"></label>
+          <label>Lisans koltuk sayısı<input name="seat_count" type="number" min="1" max="1000000" step="1"></label>
         </div>
         <label class="full-field">Notlar<textarea name="notes" rows="3" placeholder="İsteğe bağlı not"></textarea></label>
         <div class="dialog-actions"><button class="ghost-button" value="cancel">Vazgeç</button><button class="primary-button" id="save-asset" value="default">Kaydet</button></div>

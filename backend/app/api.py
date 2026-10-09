@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Asset, AuditLog, Contact, Tag, Vendor
 from app.schemas import (
+    TYPE_SPECIFIC_FIELDS,
     AssetCreate,
     AssetList,
     AssetRead,
@@ -27,6 +28,7 @@ from app.schemas import (
     TagRead,
     VendorCreate,
     VendorRead,
+    invalid_asset_type_fields,
 )
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
@@ -52,6 +54,16 @@ AUDIT_FIELDS = (
     "auto_renew",
     "status",
     "reminder_days",
+    "nameservers",
+    "hosting_plan",
+    "management_url",
+    "ip_address",
+    "operating_system",
+    "vcpu_count",
+    "memory_gb",
+    "storage_gb",
+    "product_name",
+    "seat_count",
 )
 
 CSV_HEADERS = (
@@ -68,6 +80,16 @@ CSV_HEADERS = (
     "auto_renew",
     "status",
     "reminder_days",
+    "nameservers",
+    "hosting_plan",
+    "management_url",
+    "ip_address",
+    "operating_system",
+    "vcpu_count",
+    "memory_gb",
+    "storage_gb",
+    "product_name",
+    "seat_count",
     "notes",
     "tags",
     "contacts",
@@ -237,6 +259,16 @@ def export_assets_csv(
                 asset.auto_renew,
                 asset.status,
                 json.dumps(asset.reminder_days) if asset.reminder_days is not None else "",
+                json.dumps(asset.nameservers) if asset.nameservers is not None else "",
+                asset.hosting_plan or "",
+                asset.management_url or "",
+                asset.ip_address or "",
+                asset.operating_system or "",
+                asset.vcpu_count or "",
+                asset.memory_gb or "",
+                asset.storage_gb or "",
+                asset.product_name or "",
+                asset.seat_count or "",
                 asset.notes or "",
                 "|".join(tag.name for tag in asset.tags),
                 "|".join(contact.name for contact in asset.contacts),
@@ -419,6 +451,25 @@ def update_asset(  # noqa: B008
     tag_ids = values.pop("tag_ids", None)
     contact_ids = values.pop("contact_ids", None)
     vendor_id = values.pop("vendor_id", None)
+    target_type = values.get("type", asset.type)
+    all_type_fields = set().union(*TYPE_SPECIFIC_FIELDS.values())
+    allowed_type_fields = TYPE_SPECIFIC_FIELDS.get(target_type, frozenset())
+    if target_type != asset.type:
+        for field in all_type_fields - allowed_type_fields:
+            if values.get(field) is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Fields are not supported for the selected asset type",
+                )
+            values[field] = None
+    if invalid_asset_type_fields(
+        target_type,
+        {field: values.get(field, getattr(asset, field)) for field in all_type_fields},
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Fields are not supported for the selected asset type",
+        )
     for field, value in values.items():
         setattr(asset, field, value)
     if tag_ids is not None:

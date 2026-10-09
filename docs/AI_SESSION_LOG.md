@@ -1,5 +1,16 @@
 # AI Oturum Geliştirme Günlüğü
 
+## 2026-10-09 15:56 Europe/Istanbul — Copilot — M1 tür bazlı alanlar
+
+- **Dal / başlangıç HEAD:** `ai/codex/m0-complete` / `8ed96c5`; bu aşamanın kod ve belge değişiklikleri henüz commit edilmedi. M1 contacts/liste önceki commit'leri `c33466a` ve `8ed96c5` ile push edilmişti.
+- **Kullanıcı kararı:** Sabit alanlar: domain (kayıt kuruluşu ve nameserver), hosting (plan ve yönetim URL'si), VDS (IP/işletim sistemi/CPU/RAM/disk), lisans (ürün/koltuk). Lisans anahtarı veya sır saklama yok.
+- **Yapılanlar:** Asset modeline nullable türe özgü alanlar eklendi; `0009_asset_type_details` migration'ı oluşturuldu ve Compose PostgreSQL'e uygulandı. Create/update/read şemaları ilgili tür alanlarını ve doğrulamaları destekliyor. Türler arası patch sırasında eski türe özel değerler sıfırlanıyor; uyumsuz payload 422 alıyor. Audit snapshot/diff ve CSV export yeni alanları içeriyor. Form seçilen türe göre ilgili alan grubunu gösteriyor; domain sağlayıcı etiketi kayıt kuruluşu olarak güncelleniyor. Yönetim URL'sinde kullanıcı bilgisi, query ve fragment reddediliyor; lisans anahtarı/parola alanı eklenmedi.
+- **Değişen dosyalar:** [AGENTS.md](../AGENTS.md), [api.py](../backend/app/api.py), [models.py](../backend/app/models.py), [schemas.py](../backend/app/schemas.py), [0009_asset_type_details.py](../backend/alembic/versions/0009_asset_type_details.py), [test_main.py](../backend/tests/test_main.py), [app.js](../frontend/app.js), [index.html](../frontend/index.html), [styles.css](../frontend/styles.css), [PLAN.md](./PLAN.md), [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** Backend pytest 16/16; Ruff check/format, mypy, `node --check`, Pylance diagnostics ve `git diff --check` geçti. API testleri alan round-trip, yanlış asset type, hatalı IP, sıfır koltuk, credential URL reddi, tür değiştirilince önceki alanın temizlenmesi ve CSV export'u kapsıyor. Compose PostgreSQL Alembic `0009_asset_type_details (head)`; `/health` `ok`; mevcut 4 varlığın alanları boş/null kaldı. Tarayıcıda domain/hosting/VDS/lisans seçimlerinin sadece kendi alan panelini gösterdiği ve kayıt kuruluşu etiketini değiştirdiği kontrol edildi; form kapatıldı, DB'ye test verisi yazılmadı.
+- **Yarım kalanlar / bilinen sorunlar:** Bu aşamanın commit/push'ı. M2 yenilendi/snooze ve kanal kararı sonrası e-posta/digest. Tam SQLite migration zinciri eski `0004_vendors` FK alter uyumsuzluğu nedeniyle doğrulanamıyor; PostgreSQL upgrade başarılı. Python 3.14 testlerinde bağımlılık deprecation uyarıları var.
+- **Sonraki plan:** 1) Bu M1 kapanışını commit/push et. 2) M2 yenilendi/snooze davranışı için kullanıcı tercihini al. 3) Kanal kararı sonrası güvenli gönderim/digest uygula.
+- **Kullanıcıdan beklenen:** M2 snooze süresi/iş akışı tercihi ve bildirim kanalı daha sonra.
+
 ## 2026-10-09 14:57 Europe/Istanbul — Copilot — M1 teslimi, commit ve push
 
 - **Dal / commit:** `ai/codex/m0-complete`; uygulama ve M1 değişiklikleri `c33466a` (`feat: add contacts and asset list controls`) ile commit edilip `origin/ai/codex/m0-complete` dalına push edildi. Bu kayıt/durum düzeltmesi takip eden docs commit'i olarak gönderiliyor.

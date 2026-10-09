@@ -65,6 +65,17 @@ function renderAssets(items, total, offset) {
     : '<tr><td class="empty-state" colspan="6">Filtrelere uyan varlık bulunamadı.</td></tr>';
 }
 
+function updateAssetTypeFields(type, clearInactive = false) {
+  document.querySelectorAll("[data-type-fields]").forEach((section) => {
+    const active = section.dataset.typeFields === type;
+    section.hidden = !active;
+    if (clearInactive && !active) {
+      section.querySelectorAll("input, textarea, select").forEach((field) => { field.value = ""; });
+    }
+  });
+  $("#vendor-label").textContent = type === "domain" ? "Kayıt kuruluşu" : "Sağlayıcı";
+}
+
 function renderVendorOptions() {
   const filter = $("#vendor-filter"); const selectedFilter = filter.value;
   filter.innerHTML = '<option value="">Tüm sağlayıcılar</option>' + availableVendors.map((vendor) => `<option value="${vendor.id}">${escapeHtml(vendor.name)}</option>`).join("");
@@ -194,13 +205,13 @@ async function loadDashboard() {
 }
 
 function openCreate() {
-  editingAssetId = null; $("#asset-form").reset(); setSelectedTags([]); setSelectedContacts([]); $("#dialog-eyebrow").textContent = "ENVANTERE EKLE"; $("#dialog-title").textContent = "Yeni varlık"; $("#save-asset").textContent = "Kaydet"; $("#asset-dialog").showModal();
+  editingAssetId = null; $("#asset-form").reset(); updateAssetTypeFields("domain"); setSelectedTags([]); setSelectedContacts([]); $("#dialog-eyebrow").textContent = "ENVANTERE EKLE"; $("#dialog-title").textContent = "Yeni varlık"; $("#save-asset").textContent = "Kaydet"; $("#asset-dialog").showModal();
 }
 
 async function openEdit(assetId) {
   try {
     const asset = await request(`/api/assets/${assetId}`); editingAssetId = asset.id;
-    const form = $("#asset-form"); Object.entries(asset).forEach(([key, value]) => { const field = form.elements.namedItem(key); if (field && value != null && key !== "tags" && key !== "contacts" && key !== "vendor") field.value = key === "reminder_days" ? (value.length ? value.join(", ") : "yok") : value; }); setSelectedTags((asset.tags || []).map((tag) => tag.id)); setSelectedContacts((asset.contacts || []).map((contact) => contact.id));
+    const form = $("#asset-form"); form.reset(); Object.entries(asset).forEach(([key, value]) => { const field = form.elements.namedItem(key); if (field && value != null && key !== "tags" && key !== "contacts" && key !== "vendor") field.value = key === "reminder_days" ? (value.length ? value.join(", ") : "yok") : key === "nameservers" ? value.join(", ") : value; }); updateAssetTypeFields(asset.type); setSelectedTags((asset.tags || []).map((tag) => tag.id)); setSelectedContacts((asset.contacts || []).map((contact) => contact.id));
     $("#dialog-eyebrow").textContent = "ENVANTERİ DÜZENLE"; $("#dialog-title").textContent = "Varlığı düzenle"; $("#save-asset").textContent = "Güncelle"; $("#asset-dialog").showModal();
   } catch (error) { showError("Varlık bilgisi alınamadı."); }
 }
@@ -217,6 +228,14 @@ async function saveAsset(event) {
   payload.contact_ids = [...event.target.elements.namedItem("contact_ids").selectedOptions].map((option) => Number(option.value));
   const reminderDays = payload.reminder_days.trim();
   payload.reminder_days = reminderDays.toLocaleLowerCase("tr-TR") === "yok" ? [] : reminderDays ? reminderDays.split(",").map((days) => Number(days.trim())) : null;
+  const nameservers = payload.nameservers.trim();
+  payload.nameservers = nameservers ? nameservers.split(",").map((server) => server.trim()).filter(Boolean) : null;
+  ["hosting_plan", "management_url", "ip_address", "operating_system", "product_name"].forEach((key) => {
+    payload[key] = payload[key].trim() || null;
+  });
+  ["vcpu_count", "memory_gb", "storage_gb", "seat_count"].forEach((key) => {
+    payload[key] = payload[key] ? Number(payload[key]) : null;
+  });
   payload.vendor_id = payload.vendor_id ? Number(payload.vendor_id) : null; delete payload.vendor;
   if (!payload.expires_at) delete payload.expires_at; if (!payload.cost) delete payload.cost;
   try { await request(editingAssetId ? `/api/assets/${editingAssetId}` : "/api/assets", { method: editingAssetId ? "PATCH" : "POST", body: JSON.stringify(payload) }); $("#asset-dialog").close(); event.target.reset(); await loadDashboard(); }
@@ -255,6 +274,9 @@ document.querySelectorAll(".nav-link").forEach((link) => link.addEventListener("
   event.preventDefault(); navigateTo(link.dataset.section);
 }));
 $("#asset-form").addEventListener("submit", saveAsset);
+$("#asset-form").elements.namedItem("type").addEventListener("change", (event) => {
+  updateAssetTypeFields(event.target.value, true);
+});
 ["type-filter", "status-filter", "tag-filter", "vendor-filter", "sort-by", "sort-direction"].forEach((id) => {
   $(`#${id}`).addEventListener("change", () => { assetPage = 0; loadDashboard(); });
 });

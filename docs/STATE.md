@@ -1,5 +1,15 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 15:56 — Copilot — M1 tür bazlı alanlar
+
+- **Git durumu:** `ai/codex/m0-complete`, başlangıç HEAD `8ed96c5`; tür bazlı alanlar worktree'de tamamlandı fakat henüz commit/push edilmedi. Önceki M1 contacts/liste işleri `c33466a`, takip notları `8ed96c5` olarak uzak dala gönderilmiş durumda. `.env` commit dışındadır.
+- **Yapılanlar:** Domain için nameserver ve kayıt kuruluşu etiketi; hosting için paket/yönetim URL'si; VDS için IP/OS/vCPU/RAM/disk; lisans için ürün/koltuk alanları eklendi. API şeması, PostgreSQL modeli, `0009_asset_type_details` migration'ı, audit diff'i, CSV export ve dinamik form birlikte güncellendi. URL içinde kullanıcı bilgisi/query/fragment reddediliyor; lisans anahtarı/parola alanı eklenmedi. Tür değişiminde uyumsuz eski alanlar temizleniyor.
+- **Mevcut konum:** M0 ve M1 tamamlandı (CSV import opsiyonel kapsam dışı). M2 eşik değerlendirme/kuyruk/scheduler hazır; bildirim kanalı ve yenilendi/snooze akışları eksik. M3+ başlamadı.
+- **Çalışma ortamı:** Compose PostgreSQL Alembic `0009_asset_type_details (head)`, `/health` `ok`; dört var olan demo varlık korunuyor ve yeni alanlar null. Arayüzde her tür için yalnızca kendi alan grubu görünür; test amaçlı kayıt eklenmedi.
+- **Doğrulama:** Backend pytest 16/16; Ruff check/format, mypy, `node --check`, Pylance diagnostics ve `git diff --check` başarılı. Testler alan round-trip, tip uyumsuzluğu, IP/koltuk doğrulaması, credential içeren URL reddi, tip geçişinde eski alanların temizlenmesi ve CSV alanlarını kapsıyor. Python 3.14'te Starlette/FastAPI bağımlılıklarından deprecation uyarıları görülüyor.
+- **Sıradaki sıra:** 1) Bu M1 kapanışını commit edip AI dalına push et. 2) M2 için yenilendi/snooze davranışını belirle. 3) Bildirim kanalı seçimi sonrası gönderim/digest.
+- **Kullanıcı kararı:** Tür alanları sabit model olarak seçildi; lisans anahtarı/sır tutulmayacak.
+
 ## 2026-10-09 14:57 — Copilot — M1 commit ve push
 
 - **Git durumu:** `ai/codex/m0-complete`; M1 contacts/liste çalışmaları ve birikmiş maliyet/audit/M2 değişiklikleri `c33466a` commit'iyle `origin/ai/codex/m0-complete` dalına push edildi. Bu durum/log güncellemesi takip eden dokümantasyon commit'ine dahil ediliyor. `.env` ignore kapsamında ve commit dışında.

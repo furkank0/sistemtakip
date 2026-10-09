@@ -108,7 +108,7 @@ Oturumu kapatmadan önce AGENTS.md, docs/STATE.md ve docs/AI_SESSION_LOG.md kura
 > Ayrıntılı görevler, bitti tanımları ve mimari için `docs/PLAN.md` dosyasına bak.
 
 - [x] **M0** — Repo iskeleti, Docker Compose, CI (lint + test), `.env.example`
-- [ ] **M1 (devam ediyor)** — Varlık CRUD (domain/hosting/VDS/lisans) + bitiş tarihine göre pano; contacts hazır, form/liste tamamlamaları bekliyor
+- [x] **M1** — Varlık CRUD (domain/hosting/VDS/lisans), contacts, tür bazlı form alanları ve liste/pano
 - [ ] **M2 (devam ediyor)** — Yenileme uyarı eşikleri ve kuyruk hazır; kanal kararı, e-posta gönderimi ve yenilendi/snooze akışları bekliyor
 - [ ] **M3** — Günlük checklist şablonları ve çalıştırma kaydı
 - [ ] **M4** — Otomatik kontroller (RDAP, TLS expiry, DNS, HTTP/TCP/ICMP)
