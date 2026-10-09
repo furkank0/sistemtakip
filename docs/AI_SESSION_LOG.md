@@ -1,13 +1,13 @@
 # AI Oturum Geliştirme Günlüğü
 
-## 2026-10-09 16:34 Europe/Istanbul — Copilot — Responsive arayüz düzeni
+## 2026-10-09 16:39 Europe/Istanbul — Copilot — Responsive teslim kaydı düzeltmesi
 
-- **Dal / commit:** `ai/codex/m0-complete`; arayüz `5b9b845` (`fix: make pages responsive`) ile commit edildi. Bu durum/günlük kaydı ayrı commit edilecek; ikisi push edilecek.
-- **Yapılanlar:** Ana içerik ve kenar çubuğu genişliklerinin çakışması düzeltildi. 800px altında üst navigasyon; dar ekranda tek sütunlu sağlayıcı/kişi formları, uyarlanabilir panolar ve filtre toolbar'ı, tablo içi yatay kaydırma ve taşmayı azaltan kompakt audit detayları eklendi. Dar ekranlarda kayıt sayacı tek satır tutuluyor.
-- **Değişen dosyalar:** [styles.css](../frontend/styles.css), [app.js](../frontend/app.js), [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
-- **Doğrulama:** `node --check frontend/app.js` ve `git diff --check` başarılı. `docker compose --env-file .env -f deploy/docker-compose.yml up -d --build frontend` başarılı. Tarayıcıda 350, 750 ve 1280 CSS px ölçülerinde dashboard/varlıklar/ayarlar açıldı; her durumda `documentElement.scrollWidth` ile `clientWidth` eşit, sayfa geneli yatay taşma yok. Varlık toolbar'ındaki filtreler ve mobil menü kontrol edildi. Backend kodu değişmediğinden backend testleri çalıştırılmadı.
-- **Yarım kalanlar / bilinen sorunlar:** Durum/günlük kaydını commit edip iki commit'i push et. M2 yenilendi akışı ile bildirim kanalı kararı açık; M3 başlamadı.
-- **Sonraki plan:** 1) Günlük kaydını commit edip mevcut AI dalına push et. 2) M2 yenilendi akışını tamamla. 3) Kanal kararı sonrasında bildirim gönderimini ele al, ardından M3'e geç.
+- **Dal / commit:** `ai/codex/m0-complete`; responsive arayüz `5b9b845`, durum/günlük kaydı `c3ea5bf` commit'leriyle push edildi.
+- **Yapılanlar:** Responsive arayüz değişikliği tamamlandı; bu kayıt ve [STATE.md](./STATE.md) içindeki teslim notu, push sonrasında kalan iş varmış gibi görünen ifadeler düzeltilerek senkronlandı.
+- **Değişen dosyalar:** [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** Commit/push sonrası `HEAD` ve `origin/ai/codex/m0-complete` eşit (`c3ea5bf`); çalışma ağacı temiz. Kod doğrulaması responsive teslim kaydında belirtilmiştir.
+- **Yarım kalanlar / bilinen sorunlar:** M2 "Yenilendi" akışı ve bildirim kanalı seçimi; M3 başlamadı.
+- **Sonraki plan:** 1) M2 yenilendi akışını tamamla. 2) Bildirim kanalı kararını alıp dış gönderimi uygula. 3) M3 checklist şablonlarına geç.
 - **Kullanıcıdan beklenen:** SMTP/e-posta, Teams veya Telegram bildirim kanalı seçimi.
 
 ## 2026-10-09 16:27 Europe/Istanbul — Copilot — Sağlayıcı yönetimi commit/push

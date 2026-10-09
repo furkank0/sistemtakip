@@ -1,13 +1,13 @@
 # docs/STATE.md — Canlı Proje Durumu
 
-## 2026-10-09 16:34 — Copilot — Responsive arayüz düzeni
+## 2026-10-09 16:39 — Copilot — Responsive arayüz teslim kaydı
 
-- **Git durumu:** `ai/codex/m0-complete`; arayüz `5b9b845` (`fix: make pages responsive`) commit'iyle kaydedildi. Durum/günlük kaydı commit ve push edilecek.
+- **Git durumu:** `ai/codex/m0-complete`; responsive arayüz `5b9b845`, durum/günlük kaydı `c3ea5bf` commit'leriyle `origin/ai/codex/m0-complete` dalına push edildi; yerel ve uzak HEAD eşit, çalışma ağacı temiz.
 - **Yapılanlar:** Ana içerik alanının sabit kenar çubuğuyla toplam genişliği aşması giderildi. 800px altında menü üstte iki sütunlu navigasyona geçiyor; panolar, formlar, başlıklar, varlık filtreleri ve sayfalama dar ekranlara uyarlanıyor. Dar ekranda geniş tablolar kendi içinde kaydırılıyor; audit ayrıntıları kısa gösterilip tam alan listesi `title` içinde tutuluyor.
 - **Değişen dosyalar:** [frontend/styles.css](../frontend/styles.css), [frontend/app.js](../frontend/app.js), [docs/STATE.md](./STATE.md), [docs/AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
 - **Doğrulama:** `node --check frontend/app.js`, `git diff --check` başarılı. Compose frontend yeniden build edildi; `/health` `ok`. Tarayıcıda dashboard/varlıklar/ayarlar 350, 750 ve 1280 CSS px genişliklerinde kontrol edildi; sayfa geneli yatay taşma yok, tablo kaydırmaları kendi kapsayıcısında. 350px mobil görünümünde navigasyon ve sağlayıcı formu görsel olarak kontrol edildi.
-- **Yarım kalanlar / bilinenler:** Durum/günlük kaydını commit edip commit'leri push et. M2 yenilendi akışı ve kanal seçimine bağlı e-posta/digest bekliyor.
-- **Sıradaki sıra:** 1) Durum/günlük kaydını commit edip mevcut AI dalına push et. 2) M2 yenilendi akışını tamamla, kanal kararını bekle. 3) M3 checklist şablonlarına geç.
+- **Yarım kalanlar / bilinenler:** M2 yenilendi akışı ve kanal seçimine bağlı e-posta/digest bekliyor.
+- **Sıradaki sıra:** 1) M2 yenilendi akışını tamamla, kanal kararını bekle. 2) Seçilen bildirim kanalına göre dış gönderimi tamamla. 3) M3 checklist şablonlarına geç.
 - **Kullanıcıdan beklenen:** Bildirim kanalı seçimi (SMTP/e-posta, Teams veya Telegram).
 
 ## 2026-10-09 16:27 — Copilot — Sağlayıcı düzenleme/silme commit/push
