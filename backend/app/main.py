@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
+from app.api import router as asset_router
 from app.settings import settings
 
 app = FastAPI(
@@ -9,6 +10,7 @@ app = FastAPI(
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
 )
+app.include_router(asset_router)
 
 
 @app.get("/health", tags=["system"])
