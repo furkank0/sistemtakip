@@ -2,6 +2,15 @@
 
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
+## 2026-10-09 — Codex — Docker Compose doğrulaması
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Docker Desktop 4.94.0 kuruldu ve Docker Engine/Compose v5.5.1 doğrulandı. `deploy/docker-compose.yml` stack'i PostgreSQL, backend, frontend ve Caddy proxy ile başarıyla çalışıyor. Backend imajına Alembic dosyaları eklendi ve container başlangıcında `alembic upgrade head` çalışacak şekilde ayarlandı; PostgreSQL üzerinde `0001_initial` ve `0002_assets` migration'ları başarıyla uygulandı. Frontend imajına CSS/JS dosyaları eklendi. Compose proxy kullanımında API'nin aynı origin üzerinden çağrılması düzeltildi.
+- **Doğrulama:** `http://127.0.0.1:8080/`, `/health`, `/api/docs`, `/styles.css`, `/app.js` ve `/api/assets/dashboard` HTTP 200 döndü. Chrome üzerinde dashboard arayüzü açıldı; başlangıç verisi olmadığı için özet kartları ve tablo 0 kayıt gösteriyor.
+- **Testler:** Önceki backend 6 test, Ruff/mypy ve frontend `node --check` kontrolleri başarılı. Compose build, servis sağlığı ve gerçek PostgreSQL migration akışı başarılı.
+- **Yarım kalanlar:** Docker Compose tarafında teknik blokaj kalmadı. Örnek varlık kaydı eklenmedi; kullanıcı arayüzden kendi kayıtlarını girebilir. Yeni terminalde Docker Desktop PATH'i yenilenene kadar mevcut shell'de Docker yolu açıkça eklenebilir.
+- **Sıradaki adımlar:** Bu Docker düzeltmelerini commit etmek; M1 kapsamında sağlayıcı/tag ilişkileri ve CSV dışa aktarımını eklemek; ardından M2 yenileme uyarı motoruna geçmek.
+
 ## 2026-10-09 — Codex
 
 - **Dal:** `ai/codex/m0-complete`

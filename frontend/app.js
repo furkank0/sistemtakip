@@ -1,5 +1,4 @@
-const API_BASE = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
-  ? "http://127.0.0.1:8000" : "";
+const API_BASE = window.location.port === "5173" ? "http://127.0.0.1:8000" : "";
 const labels = { domain: "Domain", hosting: "Hosting", vds: "VDS", license: "Lisans" };
 const statusLabels = { active: "Aktif", expired: "Süresi geçti", cancelled: "İptal" };
 const $ = (selector) => document.querySelector(selector);
