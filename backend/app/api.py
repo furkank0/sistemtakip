@@ -9,10 +9,19 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Asset
-from app.schemas import AssetCreate, AssetList, AssetRead, AssetUpdate, DashboardSummary
+from app.models import Asset, Tag
+from app.schemas import (
+    AssetCreate,
+    AssetList,
+    AssetRead,
+    AssetUpdate,
+    DashboardSummary,
+    TagCreate,
+    TagRead,
+)
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
+tag_router = APIRouter(prefix="/api/tags", tags=["tags"])
 
 CSV_HEADERS = (
     "id",
@@ -27,12 +36,24 @@ CSV_HEADERS = (
     "auto_renew",
     "status",
     "notes",
+    "tags",
 )
+
+
+def resolve_tags(db: Session, tag_ids: list[int]) -> list[Tag]:
+    if not tag_ids:
+        return []
+    unique_ids = set(tag_ids)
+    tags = list(db.scalars(select(Tag).where(Tag.id.in_(unique_ids))).all())
+    if len(tags) != len(unique_ids):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown tag")
+    return tags
 
 
 @router.post("", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
 def create_asset(payload: AssetCreate, db: Session = Depends(get_db)) -> Asset:  # noqa: B008
-    asset = Asset(**payload.model_dump())
+    values = payload.model_dump(exclude={"tag_ids"})
+    asset = Asset(**values, tags=resolve_tags(db, payload.tag_ids))
     db.add(asset)
     db.commit()
     db.refresh(asset)
@@ -44,6 +65,7 @@ def list_assets(
     db: Session = Depends(get_db),  # noqa: B008
     asset_type: str | None = Query(default=None, alias="type"),
     asset_status: str | None = Query(default=None, alias="status"),
+    tag_id: int | None = Query(default=None, ge=1),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
 ) -> AssetList:
@@ -52,6 +74,8 @@ def list_assets(
         query = query.where(Asset.type == asset_type)
     if asset_status:
         query = query.where(Asset.status == asset_status)
+    if tag_id:
+        query = query.join(Asset.tags).where(Tag.id == tag_id)
     assets = list(db.scalars(query).all())
     return AssetList(
         items=assets[offset : offset + limit], total=len(assets), offset=offset, limit=limit
@@ -63,12 +87,15 @@ def export_assets_csv(
     db: Session = Depends(get_db),  # noqa: B008
     asset_type: str | None = Query(default=None, alias="type"),
     asset_status: str | None = Query(default=None, alias="status"),
+    tag_id: int | None = Query(default=None, ge=1),
 ) -> Response:
     query = select(Asset).order_by(Asset.expires_at.asc().nullslast(), Asset.name.asc())
     if asset_type:
         query = query.where(Asset.type == asset_type)
     if asset_status:
         query = query.where(Asset.status == asset_status)
+    if tag_id:
+        query = query.join(Asset.tags).where(Tag.id == tag_id)
 
     output = StringIO(newline="")
     writer = csv.writer(output, lineterminator="\r\n")
@@ -88,6 +115,7 @@ def export_assets_csv(
                 asset.auto_renew,
                 asset.status,
                 asset.notes or "",
+                "|".join(tag.name for tag in asset.tags),
             )
         )
 
@@ -128,6 +156,33 @@ def dashboard(db: Session = Depends(get_db)) -> DashboardSummary:  # noqa: B008
     )
 
 
+@tag_router.get("", response_model=list[TagRead])
+def list_tags(db: Session = Depends(get_db)) -> list[Tag]:  # noqa: B008
+    return list(db.scalars(select(Tag).order_by(Tag.name.asc())).all())
+
+
+@tag_router.post("", response_model=TagRead, status_code=status.HTTP_201_CREATED)
+def create_tag(payload: TagCreate, db: Session = Depends(get_db)) -> Tag:  # noqa: B008
+    tag = Tag(name=payload.name.strip())
+    if not tag.name:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Tag name is required"
+        )
+    db.add(tag)
+    db.commit()
+    db.refresh(tag)
+    return tag
+
+
+@tag_router.delete("/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_tag(tag_id: int, db: Session = Depends(get_db)) -> None:  # noqa: B008
+    tag = db.get(Tag, tag_id)
+    if tag is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
+    db.delete(tag)
+    db.commit()
+
+
 @router.get("/{asset_id}", response_model=AssetRead)
 def get_asset(asset_id: int, db: Session = Depends(get_db)) -> Asset:  # noqa: B008
     asset = db.get(Asset, asset_id)
@@ -144,8 +199,11 @@ def update_asset(  # noqa: B008
 ) -> Asset:
     asset = get_asset(asset_id, db)
     values = payload.model_dump(exclude_unset=True)
+    tag_ids = values.pop("tag_ids", None)
     for field, value in values.items():
         setattr(asset, field, value)
+    if tag_ids is not None:
+        asset.tags = resolve_tags(db, tag_ids)
     if asset.starts_at and asset.expires_at and asset.expires_at < asset.starts_at:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

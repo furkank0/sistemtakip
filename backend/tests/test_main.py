@@ -132,6 +132,36 @@ def test_asset_csv_export_supports_filters(client: TestClient) -> None:
     assert "Yenileme notu" in csv_body
 
 
+def test_asset_tags_can_be_created_assigned_filtered_and_cleared(client: TestClient) -> None:
+    created_tag = client.post("/api/tags", json={"name": "Üretim"})
+    assert created_tag.status_code == 201
+    tag = created_tag.json()
+
+    created_asset = client.post(
+        "/api/assets",
+        json={"type": "vds", "name": "prod-vds-01", "tag_ids": [tag["id"]]},
+    )
+    assert created_asset.status_code == 201
+    assert created_asset.json()["tags"] == [tag]
+
+    filtered = client.get("/api/assets", params={"tag_id": tag["id"]})
+    assert filtered.status_code == 200
+    assert filtered.json()["total"] == 1
+
+    exported = client.get("/api/assets/export.csv", params={"tag_id": tag["id"]})
+    assert exported.status_code == 200
+    assert "prod-vds-01" in exported.content.decode("utf-8-sig")
+
+    updated = client.patch(f"/api/assets/{created_asset.json()['id']}", json={"tag_ids": []})
+    assert updated.status_code == 200
+    assert updated.json()["tags"] == []
+
+    unknown_tag = client.post(
+        "/api/assets", json={"type": "domain", "name": "unknown.example", "tag_ids": [999]}
+    )
+    assert unknown_tag.status_code == 422
+
+
 def test_dashboard_counts_assets_by_status_and_expiry(client: TestClient) -> None:
     today = date.today()
     for name, asset_type, asset_status, expires_at in (

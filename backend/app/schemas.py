@@ -29,7 +29,7 @@ class AssetBase(BaseModel):
 
 
 class AssetCreate(AssetBase):
-    pass
+    tag_ids: list[int] = Field(default_factory=list)
 
 
 class AssetUpdate(BaseModel):
@@ -46,6 +46,17 @@ class AssetUpdate(BaseModel):
     auto_renew: bool | None = None
     status: AssetStatus | None = None
     notes: str | None = None
+    tag_ids: list[int] | None = None
+
+
+class TagCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+
+
+class TagRead(TagCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
 
 
 class AssetRead(AssetBase):
@@ -54,6 +65,7 @@ class AssetRead(AssetBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    tags: list[TagRead] = Field(default_factory=list)
 
 
 class AssetList(BaseModel):

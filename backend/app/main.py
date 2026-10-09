@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 from app.api import router as asset_router
+from app.api import tag_router
 from app.settings import settings
 
 app = FastAPI(
@@ -18,6 +19,7 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 app.include_router(asset_router)
+app.include_router(tag_router)
 
 
 @app.get("/health", tags=["system"])
