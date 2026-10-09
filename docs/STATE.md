@@ -1,14 +1,14 @@
 # docs/STATE.md — Canlı Proje Durumu
 
-## 2026-10-09 16:11 — Copilot — M2 erteleme akışı
+## 2026-10-09 16:12 — Copilot — M2 erteleme commit/push
 
-- **Git durumu:** `ai/codex/m0-complete`, temel alınan commit `5a1afc2`; M2 değişiklikleri doğrulandı ancak henüz commit/push edilmedi. `.env` commit dışında.
+- **Git durumu:** `ai/codex/m0-complete`; M2 erteleme özelliği `bdffece` commit'iyle `origin/ai/codex/m0-complete` dalına push edildi. Bu teslim kaydı düzeltmesi ayrı docs commit'i olarak push ediliyor. `.env` commit dışında.
 - **Kullanıcı kararı:** Bekleyen yenileme uyarıları 1, 3 veya 7 gün ertelenebilir.
 - **Yapılanlar:** Bildirim modeline `snoozed_until` eklendi; `0010_notification_snooze` ileri/geri alınabilir migration'ı oluşturuldu. `POST /api/notifications/{id}/snooze` yalnızca 1/3/7 gün değerlerini kabul ediyor, yalnızca bekleyen uyarıları erteliyor ve değişikliği audit log'a yazıyor. Ayarlar ekranındaki kuyrukta her uyarı için üç erteleme seçeneği ve erteleme bitişi gösteriliyor. E-posta gönderimi yapılmıyor.
 - **Mevcut konum:** M0/M1 tamamlandı. M2 eşik değerlendirme, kuyruk, scheduler ve snooze hazır; e-posta/digest için kanal kararı ve "Yenilendi" akışı bekliyor. M3+ başlamadı.
 - **Çalışma ortamı:** Compose PostgreSQL migration head `0010_notification_snooze`; `/health` `ok`; servisler çalışıyor. Veritabanına test uyarısı eklenmedi.
 - **Doğrulama:** Backend pytest 17/17; Ruff check/format, mypy, Pylance diagnostics, `node --check` ve `git diff --check` başarılı. UI tarayıcıda API mock'u ile 1/3/7 seçenekleri, `days:3` isteği ve ertelendi görünümü doğrulandı; kalıcı veri yazılmadı. Python 3.14'te FastAPI/Starlette kaynaklı deprecation uyarıları sürüyor.
-- **Sıradaki sıra:** 1) Bu değişiklikleri commit/push et. 2) Kullanıcı kararından sonra "Yenilendi" akışını ve e-posta kanalını tamamla. 3) M2 kapanınca M3 checklist şablonlarına geç.
+- **Sıradaki sıra:** 1) Kullanıcıdan SMTP/Teams/Telegram kanal kararını al; dış gönderim şimdilik kapalı. 2) "Yenilendi" akışını tamamla ve seçilen kanala göre e-posta/digest ekle. 3) M2 kapanınca M3 checklist şablonlarına geç.
 - **Kullanıcıdan beklenen:** Bildirim kanalı seçimi; e-posta gönderimi kanal kararı olmadan kapalı kalacak.
 
 ## 2026-10-09 14:57 — Copilot — M1 commit ve push
