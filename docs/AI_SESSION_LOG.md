@@ -1,5 +1,17 @@
 # AI Oturum Geliştirme Günlüğü
 
+## 2026-10-09 11:23 Europe/Istanbul — Copilot — Oturum kapatışı ve Git senkronizasyonu
+
+- **Dal / başlangıç commit'i:** `ai/codex/m0-complete` / `aac4ce1`
+- **Bu oturumda yapılanlar:** `AGENTS.md`, `docs/STATE.md` ve bu günlük incelendi. `git pull --ff-only` çalıştırıldı; yerel AI dalı `origin/ai/codex/m0-complete` ile eşitti. Uygulama kodunda değişiklik yapılmadı; oturum kapatış kaydı eklendi.
+- **Değişen dosyalar:**
+  - [STATE.md](./STATE.md)
+  - [AI_SESSION_LOG.md](./AI_SESSION_LOG.md)
+- **Doğrulama:** Başlangıçta çalışma ağacı temizdi; `git diff --check` başarılı. Uygulama kodu değişmediği için kod/test çalıştırılmadı.
+- **Yarım kalanlar / bilinen sorunlar:** Bu oturumda uygulama işi başlatılmadı. Projedeki kalan işler: maliyet özetini aylık/yıllık ayrıştırma, temel audit log ve M2 yenileme uyarı motoru.
+- **Sonraki plan:** Önce aylık/yıllık maliyet özetini tamamla; sonra audit log'a ve M2'ye geç.
+- **Kullanıcıdan beklenen:** Bildirim kanalı ve lisans anahtarı saklama yaklaşımı hakkında karar.
+
 ## 2026-10-09 11:13 Europe/Istanbul — Codex — Git senkronizasyonu
 
 - **Dal / commit:** `ai/codex/m0-complete` / `0be4e62`

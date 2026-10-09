@@ -1,5 +1,14 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 11:23 — Copilot — Oturum kapatışı
+
+- **Git durumu:** `ai/codex/m0-complete`; oturum başında `git pull --ff-only` çalıştırıldı. `origin/ai/codex/m0-complete` ile eşit ve çalışma ağacı başlangıçta temizdi.
+- **Yapılanlar:** Uygulama kodunda değişiklik yapılmadı. Oturum kapatış notu [docs/AI_SESSION_LOG.md](./AI_SESSION_LOG.md) dosyasının en üstüne eklendi.
+- **Doğrulama:** `git diff --check` başarılı; kod/test çalıştırılmadı (uygulama kodu değişmedi).
+- **Yarım kalanlar:** Maliyet özetinin aylık/yıllık ayrıştırılması, audit log temeli, M2 yenileme eşikleri ve bildirim motoru.
+- **Sıradaki adım:** Önce dashboard maliyetini aylık/yıllık özetle; ardından temel audit log'u ekle ve M2'ye geç.
+- **Kullanıcıdan beklenen:** Bildirim kanalı ve lisans anahtarı saklama yaklaşımı için [Açık Kararlar](#açık-kararlar-kullanıcıdan-bekleniyor) bölümündeki kararlar.
+
 ## 2026-10-09 11:13 — Codex — Git senkronizasyonu
 
 - **Git durumu:** `git pull --ff-only origin ai/codex/m0-complete` çalıştırıldı; yerel dal ve uzak dal eşit, çalışma ağacı temizdi.
