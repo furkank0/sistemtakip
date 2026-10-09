@@ -1,5 +1,14 @@
 # docs/STATE.md — Canlı Proje Durumu
 
+## 2026-10-09 16:27 — Copilot — Sağlayıcı düzenleme/silme commit/push
+
+- **Git durumu:** `ai/codex/m0-complete`; sağlayıcı düzenleme/silme ve ayar hizası `8718975` commit'iyle `origin/ai/codex/m0-complete` dalına push edildi. Bu durum/günlük güncellemesi docs commit'i olarak push edilecek.
+- **Yapılanlar:** Sağlayıcı düzenleme API'si ve ayarlar formu eklendi; yinelenen ad kontrollü 409 döndürüyor. Sağlayıcı adı değişince bağlı varlıkların görünen adı güncelleniyor; silerken ilişkiler kaldırılıyor ancak varlığın görünen eski sağlayıcı adı korunuyor. Sağlayıcı ve bağlantılı varlık değişiklikleri audit log'a yazılıyor. Ayarlar ekranına silme onayı, düzenleme iptali ve Türkçe sağlayıcı audit etiketleri eklendi. Kişi formundaki beşinci elemanın (buton) yeni satıra düşerek hizayı bozması düzeltildi; masaüstü/tablet ve mobil grid kuralları eklendi.
+- **Doğrulama:** Backend pytest 17/17; Ruff check/format, mypy, Pylance diagnostics, `node --check` ve `git diff --check` geçti. Compose rebuild sonrası `/health` `ok`, migration head `0010_notification_snooze`. Tarayıcı mock'u ile sağlayıcı düzenle/sil akışları kontrol edildi; kalıcı sağlayıcı verisine dokunulmadı. Form alanlarının hizası aynı satır/tablet grid düzeninde kontrol edildi.
+- **Bilinenler:** Python 3.14 üzerinde FastAPI/Starlette kaynaklı deprecation uyarıları devam ediyor. Bildirim kanalı seçilmediği için e-posta gönderimi kapalı.
+- **Sıradaki sıra:** 1) M2 "Yenilendi" akışını tamamla ve kanal kararını bekle. 2) Seçilen kanala göre e-posta/digest'i uygula. 3) Sonrasında M3 checklist şablonlarına geç.
+- **Kullanıcıdan beklenen:** E-posta/Teams/Telegram bildirim kanalı kararı daha sonra.
+
 ## 2026-10-09 16:12 — Copilot — M2 erteleme commit/push
 
 - **Git durumu:** `ai/codex/m0-complete`; M2 erteleme özelliği `bdffece` commit'iyle `origin/ai/codex/m0-complete` dalına push edildi. Bu teslim kaydı düzeltmesi ayrı docs commit'i olarak push ediliyor. `.env` commit dışında.

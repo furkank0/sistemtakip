@@ -1,5 +1,15 @@
 # AI Oturum Geliştirme Günlüğü
 
+## 2026-10-09 16:27 Europe/Istanbul — Copilot — Sağlayıcı yönetimi commit/push
+
+- **Dal / commit:** `ai/codex/m0-complete`; özellik `8718975` (`feat: add provider management actions`) commit'iyle push edildi. Bu oturum günlüğü düzeltmesi ayrı docs commit'i olarak gönderiliyor.
+- **Yapılanlar:** Sağlayıcı için PATCH endpoint'i ve formdan düzenleme eklendi; ad çakışması 409, bulunamayan kayıt 404 döndürüyor. Sağlayıcı adı değişince bağlı varlık adları senkronize edilir; silme işlemi ilişkileri unlink ederken görüntülenen sağlayıcı adını korur. Sağlayıcı ekle/güncelle/sil ve bağlı varlık değişiklikleri audit log'a yazılır. Ayarlar ekranına silme onayı ve düzenleme iptali eklendi. Audit satırlarında sağlayıcı/bildirim adları Türkçeleştirildi. Kişi formunun ekle butonu masaüstünde yeni bir satıra düşüyordu; vendor ve contact formları için ayrı grid ve tablet/mobil kırılımlarıyla hizalandı.
+- **Değişen dosyalar:** [api.py](../backend/app/api.py), [schemas.py](../backend/app/schemas.py), [test_main.py](../backend/tests/test_main.py), [app.js](../frontend/app.js), [index.html](../frontend/index.html), [styles.css](../frontend/styles.css), [STATE.md](./STATE.md), [AI_SESSION_LOG.md](./AI_SESSION_LOG.md).
+- **Doğrulama:** Backend pytest 17/17; Ruff check/format, mypy, Pylance diagnostics, `node --check` ve `git diff --check` başarılı. Testler düzenleme, alan güncellemesi, yinelenen ad, boş ad, bulunamayan kayıt, asset adı senkronizasyonu, silme sonrası ilişki kaldırma ve audit kayıtlarını kapsıyor. Compose servisleri rebuild edildi; `/health` `ok`, DB head `0010_notification_snooze`. Tarayıcıda API mock'u ile sağlayıcı düzenle/sil eylemleri ve alan hizası denetlendi; gerçek sağlayıcı kaydı değiştirilmedi/silinmedi. Python 3.14'te FastAPI/Starlette kaynaklı deprecation uyarıları var.
+- **Yarım kalanlar / bilinen sorunlar:** M2 "Yenilendi" akışı ve bildirim kanalı kararı açık; dış e-posta gönderimi kapalı.
+- **Sonraki plan:** 1) M2 yenilendi akışına geç; dış bildirim öncesi kanal kararını al. 2) Seçilen kanala göre e-posta/digest ekle. 3) Sonra M3 checklist şablonları.
+- **Kullanıcıdan beklenen:** SMTP/Teams/Telegram kanal kararı.
+
 ## 2026-10-09 16:12 Europe/Istanbul — Copilot — M2 erteleme commit/push
 
 - **Dal / commit:** `ai/codex/m0-complete`; M2 erteleme özelliği `bdffece` (`feat: add notification snooze actions`) commit'iyle push edildi. Bu teslim kaydı docs commit'iyle push ediliyor.
