@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 from app.api import router as asset_router
@@ -9,6 +10,12 @@ app = FastAPI(
     version=settings.app_version,
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_headers=["Content-Type"],
 )
 app.include_router(asset_router)
 

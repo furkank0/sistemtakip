@@ -3,13 +3,65 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>sistemtakip</title>
+    <meta name="description" content="Kurum içi varlık ve sistem takip platformu">
+    <title>sistemtakip | Varlık yönetimi</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
   </head>
   <body>
-    <main>
-      <h1>sistemtakip</h1>
-      <p>Kurum içi varlık ve sistem takip platformu.</p>
-      <p>Başlangıç iskeleti hazır. API sağlık durumu: <a href="/health">/health</a></p>
-    </main>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">S</span><span>sistemtakip</span></div>
+        <nav aria-label="Ana menü">
+          <a class="nav-link active" href="#dashboard"><span>▦</span> Genel bakış</a>
+          <a class="nav-link" href="#assets"><span>◈</span> Varlıklar</a>
+          <a class="nav-link" href="#checks"><span>✓</span> Kontroller</a>
+          <a class="nav-link" href="#settings"><span>⚙</span> Ayarlar</a>
+        </nav>
+        <div class="sidebar-footer"><span class="status-dot"></span> Sistem hazır</div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div><p class="eyebrow">VARLIK YÖNETİMİ</p><h1>Genel bakış</h1></div>
+          <button class="primary-button" id="open-create" type="button">+ Yeni varlık</button>
+        </header>
+
+        <section id="dashboard" class="dashboard-grid" aria-label="Özet bilgiler">
+          <article class="stat-card"><div class="stat-icon blue">◈</div><div><p>Toplam varlık</p><strong id="total-count">—</strong></div></article>
+          <article class="stat-card"><div class="stat-icon green">✓</div><div><p>Aktif</p><strong id="active-count">—</strong></div></article>
+          <article class="stat-card"><div class="stat-icon amber">!</div><div><p>90 gün içinde biten</p><strong id="expiring-count">—</strong></div></article>
+          <article class="stat-card"><div class="stat-icon red">↘</div><div><p>Süresi geçen</p><strong id="expired-count">—</strong></div></article>
+        </section>
+
+        <section class="content-card" id="assets">
+          <div class="section-heading"><div><h2>Varlıklar</h2><p>Domain, hosting, VDS ve lisans envanteriniz.</p></div><span class="record-count" id="record-count">0 kayıt</span></div>
+          <div class="toolbar">
+            <label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Varlık ara..."></label>
+            <select id="type-filter" aria-label="Varlık türü"><option value="">Tüm türler</option><option value="domain">Domain</option><option value="hosting">Hosting</option><option value="vds">VDS</option><option value="license">Lisans</option></select>
+            <select id="status-filter" aria-label="Varlık durumu"><option value="">Tüm durumlar</option><option value="active">Aktif</option><option value="expired">Süresi geçti</option><option value="cancelled">İptal</option></select>
+            <button class="ghost-button" id="refresh-button" type="button">↻ Yenile</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Varlık</th><th>Tür</th><th>Sağlayıcı</th><th>Bitiş tarihi</th><th>Durum</th><th></th></tr></thead><tbody id="asset-rows"><tr><td class="empty-state" colspan="6">Varlıklar yükleniyor...</td></tr></tbody></table></div>
+        </section>
+        <p class="error-banner hidden" id="error-banner"></p>
+      </main>
+    </div>
+
+    <dialog id="asset-dialog">
+      <form method="dialog" id="asset-form">
+        <div class="dialog-heading"><div><p class="eyebrow">ENVANTERE EKLE</p><h2>Yeni varlık</h2></div><button class="icon-button" value="cancel" aria-label="Kapat">×</button></div>
+        <div class="form-grid">
+          <label>Ad / hostname<input name="name" required maxlength="255" placeholder="example.com"></label>
+          <label>Tür<select name="type" required><option value="domain">Domain</option><option value="hosting">Hosting</option><option value="vds">VDS</option><option value="license">Lisans</option></select></label>
+          <label>Sağlayıcı<input name="vendor" maxlength="255" placeholder="Sağlayıcı adı"></label>
+          <label>Sorumlu<input name="owner" maxlength="255" placeholder="Ekip veya kişi"></label>
+          <label>Bitiş tarihi<input name="expires_at" type="date"></label>
+          <label>Maliyet<input name="cost" type="number" min="0" step="0.01" placeholder="0.00"></label>
+        </div>
+        <label class="full-field">Notlar<textarea name="notes" rows="3" placeholder="İsteğe bağlı not"></textarea></label>
+        <div class="dialog-actions"><button class="ghost-button" value="cancel">Vazgeç</button><button class="primary-button" id="save-asset" value="default">Kaydet</button></div>
+      </form>
+    </dialog>
   </body>
 </html>
