@@ -2,6 +2,13 @@
 
 > Her ajan oturum sonunda (veya kesinti öncesi) bu dosyayı günceller. En yeni oturum **en üstte** olmalıdır.
 
+## 2026-10-09 — Codex — Genel Bakış dashboard detayları
+
+- **Dal:** `ai/codex/m0-complete`
+- **Yapılanlar:** Genel Bakış yalnızca sayaç gösteren yapıdan çıkarıldı. Yaklaşan yenilemeler tablosu, varlık türü dağılımı ve kayıtlı toplam maliyet özeti eklendi. Yenileme satırları kalan gün sayısını hesaplıyor ve 30 gün altını vurguluyor.
+- **Doğrulama:** Frontend Docker imajı yeniden oluşturuldu. Chrome üzerinde 4 demo varlık; `demo-web-hosting` için 42 gün, `demo.example.com` için 84 gün ve toplam `₺30.650` kayıtlı maliyet görünür olarak doğrulandı. `node --check` ve `git diff --check` başarılı.
+- **Sıradaki adımlar:** Sağlayıcı yönetimi ve filtresini eklemek; maliyet özetini aylık/yıllık ayrıştırmak; audit log temelini oluşturmak.
+
 ## 2026-10-09 — Codex — Sol menü panelleri
 
 - **Dal:** `ai/codex/m0-complete`

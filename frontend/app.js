@@ -49,6 +49,30 @@ function renderAssets(items) {
     : '<tr><td class="empty-state" colspan="6">Filtrelere uyan varlık bulunamadı.</td></tr>';
 }
 
+function formatCurrency(value) {
+  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(value);
+}
+
+function renderOverview(items) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const upcoming = items.filter((asset) => asset.status === "active" && asset.expires_at)
+    .sort((left, right) => left.expires_at.localeCompare(right.expires_at)).slice(0, 5);
+  $("#renewal-rows").innerHTML = upcoming.length ? upcoming.map((asset) => {
+    const days = Math.ceil((new Date(`${asset.expires_at}T00:00:00`) - today) / 86400000);
+    const remaining = days < 0 ? "Süresi geçti" : `${days} gün`;
+    return `<tr><td><span class="asset-name">${escapeHtml(asset.name)}</span></td><td>${escapeHtml(labels[asset.type] || asset.type)}</td><td>${escapeHtml(asset.expires_at)}</td><td><span class="remaining ${days <= 30 ? "urgent" : ""}">${remaining}</span></td></tr>`;
+  }).join("") : '<tr><td class="empty-state" colspan="4">Yaklaşan yenileme bulunmuyor.</td></tr>';
+
+  const counts = items.reduce((result, asset) => { result[asset.type] = (result[asset.type] || 0) + 1; return result; }, {});
+  const totalCost = items.reduce((sum, asset) => sum + Number(asset.cost || 0), 0);
+  $("#registered-cost").textContent = `Kayıtlı: ${formatCurrency(totalCost)}`;
+  const maxCount = Math.max(...Object.values(counts), 1);
+  $("#type-breakdown").innerHTML = Object.entries(labels).map(([type, label]) => {
+    const count = counts[type] || 0;
+    return `<div class="breakdown-row"><div><span>${label}</span><strong>${count}</strong></div><div class="progress-track"><span style="width:${(count / maxCount) * 100}%"></span></div></div>`;
+  }).join("");
+}
+
 async function loadDashboard() {
   clearError();
   const type = $("#type-filter").value; const status = $("#status-filter").value; const tagId = $("#tag-filter").value;
@@ -61,7 +85,7 @@ async function loadDashboard() {
     availableTags = tags; renderTagOptions();
     $("#total-count").textContent = summary.total; $("#active-count").textContent = summary.active;
     $("#expiring-count").textContent = summary.expiring_90_days; $("#expired-count").textContent = summary.expired;
-    renderAssets(data.items);
+    renderAssets(data.items); renderOverview(data.items);
     const health = await request("/health");
     $("#api-status").textContent = health.status === "ok" ? "Bağlı" : "Kontrol et";
   } catch (error) {
